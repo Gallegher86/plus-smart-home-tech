@@ -1,4 +1,4 @@
-package ru.practicum.dto.hubs;
+package ru.yandex.practicum.dto.hubs;
 
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

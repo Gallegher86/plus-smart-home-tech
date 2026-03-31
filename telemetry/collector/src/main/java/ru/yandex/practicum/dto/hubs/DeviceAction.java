@@ -1,4 +1,4 @@
-package ru.practicum.dto.hubs;
+package ru.yandex.practicum.dto.hubs;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +14,7 @@ public class DeviceAction {
     private String sensorId;
 
     @NotNull
-    private DeviceActionType type;
+    private ActionType type;
 
     private Integer value;
 }

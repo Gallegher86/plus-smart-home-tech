@@ -1,4 +1,4 @@
-package ru.practicum.dto.hubs;
+package ru.yandex.practicum.dto.hubs;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,15 +9,15 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ScenarionCondition {
+public class ScenarioCondition {
     @NotBlank
     private String sensorId;
 
     @NotNull
-    private ScenarioType type;
+    private ConditionType type;
 
     @NotNull
-    private ScenarioOperation operation;
+    private ConditionOperation operation;
 
     private Integer value;
 }

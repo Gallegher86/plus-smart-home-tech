@@ -1,4 +1,4 @@
-package ru.practicum.dto.hubs;
+package ru.yandex.practicum.dto.hubs;
 
 public enum DeviceType {
     MOTION_SENSOR,

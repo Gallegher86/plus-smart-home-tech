@@ -1,4 +1,4 @@
-package ru.practicum.dto.sensors;
+package ru.yandex.practicum.dto.sensors;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class MotionEventSensor extends SensorEvent {
+public class MotionSensorEvent extends SensorEvent {
     @NotNull
     private Integer linkQuality;
 

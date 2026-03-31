@@ -1,4 +1,4 @@
-package ru.practicum.dto.sensors;
+package ru.yandex.practicum.dto.sensors;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -8,15 +8,18 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class TemperatureSensorEvent extends SensorEvent {
+public class ClimateSensorEvent extends SensorEvent {
     @NotNull
     private Integer temperatureC;
 
     @NotNull
-    private Integer temperatureF;
+    private Integer humidity;
+
+    @NotNull
+    private Integer co2Level;
 
     @Override
     public SensorEventType getType() {
-        return SensorEventType.TEMPERATURE_SENSOR_EVENT;
+        return SensorEventType.CLIMATE_SENSOR_EVENT;
     }
 }

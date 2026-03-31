@@ -1,4 +1,4 @@
-package ru.practicum.dto.hubs;
+package ru.yandex.practicum.dto.hubs;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -16,7 +16,7 @@ public class ScenarioAddedEvent extends HubEvent {
     private String name;
 
     @NotEmpty
-    private List<ScenarionCondition> conditions;
+    private List<ScenarioCondition> conditions;
 
     @NotEmpty
     private List<DeviceAction> actions;
