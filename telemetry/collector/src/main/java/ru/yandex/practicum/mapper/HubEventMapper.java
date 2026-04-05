@@ -17,15 +17,17 @@ public interface HubEventMapper {
 
     ScenarioRemovedEventAvro toScenarioRemovedEventAvro(ScenarioRemovedEvent event);
 
-    @Mapping(target = "sensor_id", source = "sensorId")
     ScenarioConditionAvro toScenarioConditionAvro(ScenarioCondition condition);
 
-    @Mapping(target = "sensor_id", source = "sensorId")
     DeviceActionAvro toDeviceActionAvro(DeviceAction action);
 
     HubEventTypeAvro toHubEventTypeAvro(HubEventType type);
+
     ActionTypeAvro toActionTypeAvro(ActionType type);
+
     DeviceTypeAvro toDeviceType(DeviceType type);
+
     ConditionTypeAvro toConditionTypeAvro(ConditionType type);
+
     ConditionOperationAvro toConditionOperationAvro(ConditionOperation operation);
 }
