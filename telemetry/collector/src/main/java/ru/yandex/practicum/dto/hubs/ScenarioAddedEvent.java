@@ -15,10 +15,10 @@ public class ScenarioAddedEvent extends HubEvent {
     @Size(min = 3, message = "Название сценария должно быть не менее трех символов.")
     private String name;
 
-    @NotEmpty
+    @NotEmpty(message = "Условия сценария должны быть указаны.")
     private List<ScenarioCondition> conditions;
 
-    @NotEmpty
+    @NotEmpty(message = "Действия сценария должны быть указаны.")
     private List<DeviceAction> actions;
 
     @Override

@@ -9,13 +9,13 @@ import lombok.ToString;
 @Setter
 @ToString
 public class ClimateSensorEvent extends SensorEvent {
-    @NotNull
+    @NotNull(message = "Температура должна быть указана.")
     private Integer temperatureC;
 
-    @NotNull
+    @NotNull(message = "Влажность должна быть указана.")
     private Integer humidity;
 
-    @NotNull
+    @NotNull(message = "Содержание углекислого газа должна быть указано.")
     private Integer co2Level;
 
     @Override

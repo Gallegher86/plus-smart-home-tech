@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.exception.KafkaConfigurationException;
 
 import java.time.Duration;
 import java.util.Map;
@@ -25,18 +26,18 @@ public class KafkaCollectorProducer implements AutoCloseable {
 
     private Map<String, String> validateTopics(Map<String, String> topics) {
         if (topics == null || topics.isEmpty()) {
-            throw new IllegalArgumentException("Kafka topics configuration is missing or empty");
+            throw new KafkaConfigurationException("В конфигурации Kafka отсутствуют topics.");
         }
         return topics;
     }
 
     private KafkaProducer<String, SpecificRecordBase> createKafkaProducer(Map<String, String> configProps) {
         if (configProps == null || configProps.isEmpty()) {
-            throw new IllegalArgumentException("Kafka producer configuration is missing");
+            throw new KafkaConfigurationException("Отсутствует конфигурация Kafka.");
         }
 
         if (!configProps.containsKey(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG)) {
-            throw new IllegalArgumentException("bootstrap.servers must be configured");
+            throw new KafkaConfigurationException("Отсутствует конфигурация bootstrap.servers.");
         }
 
         Properties properties = new Properties();
@@ -49,7 +50,7 @@ public class KafkaCollectorProducer implements AutoCloseable {
         String topicName = topics.get(topic.getConfigKey());
 
         if (topicName == null) {
-            throw new IllegalArgumentException("Topic not configured for key: " + topic);
+            throw new KafkaConfigurationException("Переданного топика нет в конфигурации: " + topic);
         }
 
         ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(topicName, key, value);
@@ -58,14 +59,14 @@ public class KafkaCollectorProducer implements AutoCloseable {
             if (exception != null) {
                 log.info("Error sending message to topic {}", topicName, exception);
             } else {
-                log.debug("Message sent, partition {}, offset {}", metadata.partition(), metadata.offset());
+                log.debug("Сообщение отправлено, партиция {}, офсет {}", metadata.partition(), metadata.offset());
             }
         });
     }
 
     @Override
     public void close() {
-        log.info("Closing Kafka producer");
+        log.info("Остановка Kafka producer.");
         kafkaProducer.flush();
         kafkaProducer.close(PRODUCER_CLOSE_DURATION);
     }

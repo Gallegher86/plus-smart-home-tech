@@ -9,10 +9,10 @@ import lombok.ToString;
 @Setter
 @ToString
 public class LightSensorEvent extends SensorEvent {
-    @NotNull
+    @NotNull(message = "Качество соединения должно быть указано.")
     private Integer linkQuality;
 
-    @NotNull
+    @NotNull(message = "Освещенность должна быть указана.")
     private Integer luminosity;
 
     @Override

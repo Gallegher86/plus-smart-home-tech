@@ -29,14 +29,14 @@ import java.time.Instant;
 @Setter
 @ToString
 public abstract class SensorEvent {
-    @NotBlank
+    @NotBlank(message = "id должен быть указан.")
     private String id;
 
-    @NotBlank
+    @NotBlank(message = "hubId должен быть указан.")
     private String hubId;
 
     private Instant timestamp = Instant.now();
 
-    @NotNull
+    @NotNull(message = "Тип события должен быть указан.")
     public abstract SensorEventType getType();
 }

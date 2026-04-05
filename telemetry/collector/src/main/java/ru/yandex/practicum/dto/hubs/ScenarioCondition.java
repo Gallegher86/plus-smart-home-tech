@@ -10,13 +10,13 @@ import lombok.ToString;
 @Setter
 @ToString
 public class ScenarioCondition {
-    @NotBlank
+    @NotBlank(message = "sensorId должен быть указан.")
     private String sensorId;
 
-    @NotNull
+    @NotNull(message = "Тип сенсора должен быть указан.")
     private ConditionType type;
 
-    @NotNull
+    @NotNull(message = "Операция должна быть указана.")
     private ConditionOperation operation;
 
     private Integer value;

@@ -9,7 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class SwitchSensorEvent extends SensorEvent {
-    @NotNull
+    @NotNull(message = "Состояние датчика должно быть указано.")
     private Boolean state;
 
     @Override

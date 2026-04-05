@@ -10,10 +10,10 @@ import lombok.ToString;
 @Setter
 @ToString
 public class DeviceAction {
-    @NotBlank
+    @NotBlank(message = "sensorId устройства должен быть указан.")
     private String sensorId;
 
-    @NotNull
+    @NotNull(message = "Действие должно быть указано.")
     private ActionType type;
 
     private Integer value;

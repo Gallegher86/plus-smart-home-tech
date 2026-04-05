@@ -23,17 +23,17 @@ public class CollectorServiceImpl implements CollectorService {
 
     @Override
     public void processSensorEvent(SensorEvent event) {
-        log.info("Processing sensor event: id={}, type={}", event.getId(), event.getType());
+        log.info("Обработка Sensor event: id={}, type={}", event.getId(), event.getType());
         SpecificRecordBase eventAvro = mapToSensorEventAvro(event);
-        log.debug("Sensor event Avro payload: {}", eventAvro);
+        log.debug("Создан sensorAvro-объект: {}", eventAvro);
         producer.send(KafkaTopic.SENSOR, event.getId(), eventAvro);
     }
 
     @Override
     public void processHubEvent(HubEvent event) {
-        log.info("Processing hub event: hubId={}, type={}", event.getHubId(), event.getType());
+        log.info("Обработка Hub event: hubId={}, type={}", event.getHubId(), event.getType());
         SpecificRecordBase eventAvro = mapToHubEventAvro(event);
-        log.debug("Hub event Avro payload: {}", eventAvro);
+        log.debug("Создан hubAvro-объект: {}", eventAvro);
         producer.send(KafkaTopic.HUB, event.getHubId(), eventAvro);
     }
 

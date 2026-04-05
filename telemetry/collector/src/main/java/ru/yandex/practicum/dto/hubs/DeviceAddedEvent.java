@@ -10,10 +10,10 @@ import lombok.ToString;
 @Setter
 @ToString
 public class DeviceAddedEvent extends HubEvent {
-    @NotBlank
+    @NotBlank(message = "id устройства должен быть указан.")
     private String id;
 
-    @NotNull
+    @NotNull(message = "Тип устройства должен быть указан.")
     private DeviceType deviceType;
 
     @Override

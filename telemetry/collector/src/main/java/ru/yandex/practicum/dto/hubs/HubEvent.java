@@ -28,11 +28,11 @@ import java.time.Instant;
 @Setter
 @ToString
 public abstract class HubEvent {
-    @NotBlank
+    @NotBlank(message = "hubId должен быть указан.")
     private String hubId;
 
     private Instant timestamp = Instant.now();
 
-    @NotNull
+    @NotNull(message = "Тип события должен быть указан.")
     public abstract HubEventType getType();
 }
