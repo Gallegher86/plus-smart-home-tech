@@ -55,7 +55,6 @@ public class CollectorServiceImpl implements CollectorService {
                 .setId(event.getId())
                 .setHubId(event.getHubId())
                 .setTimestamp(event.getTimestamp())
-                .setType(sensorEventMapper.toSensorEventTypeAvro(event.getType()))
                 .setPayload(payload)
                 .build();
     }
@@ -75,7 +74,6 @@ public class CollectorServiceImpl implements CollectorService {
         return HubEventAvro.newBuilder()
                 .setHubId(event.getHubId())
                 .setTimestamp(event.getTimestamp())
-                .setType(hubEventMapper.toHubEventTypeAvro(event.getType()))
                 .setPayload(payload)
                 .build();
     }
