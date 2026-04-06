@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.exception.KafkaConfigurationException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,9 +34,9 @@ public class ErrorHandler {
         );
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler(KafkaConfigurationException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiError handleIllegalArgument(IllegalArgumentException ex) {
+    public ApiError handleKfkaConfigurationException(KafkaConfigurationException ex) {
         String errorMessage = "Внутренние ошибки в работе сервиса.";
 
         log.warn("Ошибка в параметрах настройки kafka: {} - {}",
@@ -43,7 +44,7 @@ public class ErrorHandler {
 
         return new ApiError(
                 errorMessage,
-                "Invalid argument",
+                "Kafka Configuration Error",
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 LocalDateTime.now(),
                 List.of(ex.getMessage())

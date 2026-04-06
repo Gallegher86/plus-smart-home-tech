@@ -17,11 +17,10 @@ public interface HubEventMapper {
 
     ScenarioRemovedEventAvro toScenarioRemovedEventAvro(ScenarioRemovedEvent event);
 
+    @Mapping(target = "value", expression = "java(condition.getValue())")
     ScenarioConditionAvro toScenarioConditionAvro(ScenarioCondition condition);
 
     DeviceActionAvro toDeviceActionAvro(DeviceAction action);
-
-    HubEventTypeAvro toHubEventTypeAvro(HubEventType type);
 
     ActionTypeAvro toActionTypeAvro(ActionType type);
 

@@ -15,6 +15,4 @@ public interface SensorEventMapper {
     SwitchSensorAvro toSwitchSensorEventAvro(SwitchSensorEvent event);
 
     TemperatureSensorAvro toTemperatureSensorEventAvro(TemperatureSensorEvent event);
-
-    SensorEventTypeAvro toSensorEventTypeAvro(SensorEventType type);
 }

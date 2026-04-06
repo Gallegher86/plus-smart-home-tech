@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.exception.KafkaConfigurationException;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Properties;
 
@@ -46,14 +47,20 @@ public class KafkaCollectorProducer implements AutoCloseable {
         return new KafkaProducer<>(properties);
     }
 
-    public void send(KafkaTopic topic, String key, SpecificRecordBase value) {
+    public void send(KafkaTopic topic, Instant eventTimestamp, String key, SpecificRecordBase value) {
         String topicName = topics.get(topic.getConfigKey());
 
         if (topicName == null) {
             throw new KafkaConfigurationException("Переданного топика нет в конфигурации: " + topic);
         }
 
-        ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(topicName, key, value);
+        ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
+                topicName,
+                null,
+                eventTimestamp.toEpochMilli(),
+                key,
+                value
+        );
 
         kafkaProducer.send(record, (metadata, exception) -> {
             if (exception != null) {

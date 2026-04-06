@@ -1,12 +1,5 @@
 @namespace("ru.yandex.practicum.kafka.telemetry.event")
 protocol HubEventProtocol {
-	enum HubEventTypeAvro {
-		DEVICE_ADDED,
-		DEVICE_REMOVED,
-		SCENARIO_ADDED,
-		SCENARIO_REMOVED
-	}
-
 	enum ActionTypeAvro {
 		ACTIVATE,
 		DEACTIVATE,

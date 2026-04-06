@@ -1,5 +1,6 @@
 package ru.yandex.practicum.dto.hubs;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -19,5 +20,12 @@ public class ScenarioCondition {
     @NotNull(message = "Операция должна быть указана.")
     private ConditionOperation operation;
 
-    private Integer value;
+    private Object value;
+
+    @AssertTrue(message = "value должен быть Integer или Boolean.")
+    public boolean isValueValid() {
+        return value == null ||
+                value instanceof Integer ||
+                value instanceof Boolean;
+    }
 }
