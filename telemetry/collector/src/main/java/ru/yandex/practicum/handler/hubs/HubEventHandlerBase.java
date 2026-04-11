@@ -3,7 +3,7 @@ package ru.yandex.practicum.handler.hubs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
-import ru.yandex.practicum.exception.UnsupportedEventTypeException;
+import ru.yandex.practicum.exception.HandlerException;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.kafka.KafkaCollectorProducer;
 import ru.yandex.practicum.kafka.KafkaTopic;
@@ -25,7 +25,7 @@ public abstract class HubEventHandlerBase<T extends SpecificRecordBase> implemen
         log.info("Обработка Hub event: hubId={}, type={}", event.getHubId(), event.getPayloadCase());
 
         if (event.getPayloadCase() != getMessageType()) {
-            throw new UnsupportedEventTypeException(
+            throw new HandlerException(
                     "Обработчик " + getClass().getSimpleName() +
                             " не может обработать событие с типом: " + event.getPayloadCase()
             );
