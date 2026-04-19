@@ -2,7 +2,6 @@ package ru.yandex.practicum.kafka;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
@@ -19,14 +18,14 @@ public class KafkaProperties {
     @Getter
     @Setter
     public static class ProducerConfiguration {
-        private Map<String, Object> properties = new HashMap<>();
+        private Map<String, String> properties = new HashMap<>();
         private String snapshotTopic;
     }
 
     @Getter
     @Setter
     public static class ConsumerConfiguration {
-        private Map<String, Object> properties = new HashMap<>();
+        private Map<String, String> properties = new HashMap<>();
         private String sensorTopic;
         private Duration pollTimeout = Duration.ofMillis(100);
         private int batchSize;

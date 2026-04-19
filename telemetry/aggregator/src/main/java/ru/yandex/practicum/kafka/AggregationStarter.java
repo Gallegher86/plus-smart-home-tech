@@ -1,6 +1,5 @@
 package ru.yandex.practicum.kafka;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -24,14 +23,32 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class AggregationStarter implements ApplicationRunner {
+    private final KafkaConsumer<String, SensorEventAvro> consumer;
+    private final KafkaProducer<String, SensorsSnapshotAvro> producer;
     private final KafkaProperties properties;
     private final AggregatorService service;
+
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
-    private final Duration pollTimeout = properties.getConsumer().getPollTimeout();
-    private final int batchSize = properties.getConsumer().getBatchSize();
+
+    private final Duration pollTimeout;
+    private final int batchSize;
     private int processedCount = 0;
+
+    public AggregationStarter(
+            KafkaConsumer<String, SensorEventAvro> consumer,
+            KafkaProducer<String, SensorsSnapshotAvro> producer,
+            KafkaProperties properties,
+            AggregatorService service
+    ) {
+        this.consumer = consumer;
+        this.producer = producer;
+        this.properties = properties;
+        this.service = service;
+
+        this.pollTimeout = properties.getConsumer().getPollTimeout();
+        this.batchSize = properties.getConsumer().getBatchSize();
+    }
 
     @Override
     public void run(ApplicationArguments args) {
@@ -39,12 +56,6 @@ public class AggregationStarter implements ApplicationRunner {
     }
 
     public void start() {
-        KafkaConsumer<String, SensorEventAvro> consumer =
-                new KafkaConsumer<>(properties.getConsumer().getProperties());
-
-        KafkaProducer<String, SensorsSnapshotAvro> producer =
-                new KafkaProducer<>(properties.getProducer().getProperties());
-
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
         try {
@@ -85,8 +96,11 @@ public class AggregationStarter implements ApplicationRunner {
 
     private void handleRecord(ConsumerRecord<String, SensorEventAvro> record,
                               KafkaProducer<String, SensorsSnapshotAvro> producer) {
+        String topic = properties.getProducer().getSnapshotTopic();
+
         service.updateState(record.value())
-                .ifPresent(snapshot -> producer.send(new ProducerRecord<>(properties.getProducer().getSnapshotTopic(), snapshot)));
+                .ifPresent(snapshot -> producer
+                        .send(new ProducerRecord<>(topic, snapshot.getHubId(), snapshot)));
     }
 
     private void manageOffsets(ConsumerRecord<String, SensorEventAvro> record,
