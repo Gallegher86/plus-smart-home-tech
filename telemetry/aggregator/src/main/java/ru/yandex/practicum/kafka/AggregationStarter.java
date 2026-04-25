@@ -26,7 +26,7 @@ import java.util.Map;
 public class AggregationStarter implements ApplicationRunner {
     private final KafkaConsumer<String, SensorEventAvro> consumer;
     private final KafkaProducer<String, SensorsSnapshotAvro> producer;
-    private final KafkaProperties properties;
+    private final AggregatorKafkaProperties properties;
     private final AggregatorService service;
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
@@ -38,7 +38,7 @@ public class AggregationStarter implements ApplicationRunner {
     public AggregationStarter(
             KafkaConsumer<String, SensorEventAvro> consumer,
             KafkaProducer<String, SensorsSnapshotAvro> producer,
-            KafkaProperties properties,
+            AggregatorKafkaProperties properties,
             AggregatorService service
     ) {
         this.consumer = consumer;
