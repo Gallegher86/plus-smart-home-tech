@@ -5,6 +5,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.handler.hub.HubEventHandler;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
@@ -17,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class HubEventProcessor implements Runnable {
+public class HubEventProcessor implements ApplicationRunner {
     private final KafkaConsumer<String, HubEventAvro> consumer;
     private final AnalyzerKafkaProperties properties;
     private final Map<Class<?>, HubEventHandler> hubEventHandlers;
@@ -39,7 +41,12 @@ public class HubEventProcessor implements Runnable {
         this.pollTimeout = properties.getHubEventConfiguration().getPollTimeout();
     }
 
-    public void run() {
+    @Override
+    public void run(ApplicationArguments args) {
+        start();
+    }
+
+    private void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
         try {
