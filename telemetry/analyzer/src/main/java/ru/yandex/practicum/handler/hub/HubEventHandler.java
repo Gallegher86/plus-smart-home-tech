@@ -5,5 +5,5 @@ import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 public interface HubEventHandler {
     Class<?> getPayloadType();
 
-    void handle(String hubId, HubEventAvro event);
+    void handle(HubEventAvro event);
 }

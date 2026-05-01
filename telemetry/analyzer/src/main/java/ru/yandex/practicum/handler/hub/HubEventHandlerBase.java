@@ -17,7 +17,7 @@ public abstract class HubEventHandlerBase<T> implements HubEventHandler {
     }
 
     @Override
-    public void handle(String hubId, HubEventAvro event) {
+    public void handle(HubEventAvro event) {
         Object payload = event.getPayload();
 
         if (!payloadType.isInstance(payload)) {
@@ -32,8 +32,8 @@ public abstract class HubEventHandlerBase<T> implements HubEventHandler {
                 event.getHubId(),
                 payloadType.getSimpleName());
 
-        process(hubId, event, typedPayload);
+        process(event, typedPayload);
     }
 
-    protected abstract void process(String hubId, HubEventAvro event, T payload);
+    protected abstract void process(HubEventAvro event, T payload);
 }

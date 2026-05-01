@@ -57,15 +57,7 @@ public class HubEventProcessor implements ApplicationRunner {
                         consumer.poll(pollTimeout);
 
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
-                    Object payload = record.value().getPayload();
-                    HubEventHandler handler = hubEventHandlers.get(payload.getClass());
-
-                    if (handler == null) {
-                        log.warn("Нет handler для payload: {}", payload.getClass());
-                        continue;
-                    }
-
-                    handler.handle(record.key(), record.value());
+                    processRecord(record);
                 }
 
                 consumer.commitAsync((offsets, ex) -> {
@@ -86,6 +78,31 @@ public class HubEventProcessor implements ApplicationRunner {
                 log.info("Закрываем консьюмер");
                 consumer.close();
             }
+        }
+    }
+
+    private void processRecord(ConsumerRecord<String, HubEventAvro> record) {
+        try {
+            HubEventAvro event = record.value();
+
+            Object payload = event.getPayload();
+            HubEventHandler handler = hubEventHandlers.get(payload.getClass());
+
+            if (handler == null) {
+                log.warn("Нет handler для payload: {}", payload.getClass());
+                return;
+            }
+
+            handler.handle(event);
+
+        } catch (Exception ex) {
+            log.error(
+                    "Ошибка обработки сообщения. topic={}, partition={}, offset={}",
+                    record.topic(),
+                    record.partition(),
+                    record.offset(),
+                    ex
+            );
         }
     }
 }
