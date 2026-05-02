@@ -25,8 +25,6 @@ public class ScenarioServiceImpl implements ScenarioService {
     private final SensorRepository sensorRepository;
     private final ScenarioRepository scenarioRepository;
     private final ConditionRepository conditionRepository;
-    private final ScenarioConditionRepository scenarioConditionRepository;
-    private final ScenarioActionRepository scenarioActionRepository;
 
     private final ConditionConverter conditionConverter;
     private final ActionMapper actionMapper;
@@ -38,13 +36,9 @@ public class ScenarioServiceImpl implements ScenarioService {
 
         log.info("Запрос на сохранение/обновление сценария: hubId={}, name={}", hubId, name);
 
-        Optional<Scenario> existing = scenarioRepository.findByHubIdAndName(hubId, name);
-
-        if (existing.isPresent()) {
-            return updateScenario(existing.get(), event);
-        } else {
-            return createScenario(hubId, event);
-        }
+        return scenarioRepository.findByHubIdAndName(hubId, name)
+                .map(s -> updateScenario(s, event))
+                .orElseGet(() -> createScenario(hubId, event));
     }
 
     @Override
@@ -54,15 +48,9 @@ public class ScenarioServiceImpl implements ScenarioService {
 
         scenarioRepository.findByHubIdAndName(hubId, name)
                 .ifPresent(scenario -> {
-                    Long scenarioId = scenario.getId();
-
-                    scenarioConditionRepository.deleteByIdScenarioId(scenarioId);
-                    scenarioActionRepository.deleteByIdScenarioId(scenarioId);
-
+                    actionRepository.deleteAll(scenario.getActions().values());
+                    conditionRepository.deleteAll(scenario.getConditions().values());
                     scenarioRepository.delete(scenario);
-
-                    conditionRepository.deleteOrphans();
-                    actionRepository.deleteOrphans();
                     log.info("Сценарий удален: id={}", scenario.getId());
                 });
     }
@@ -72,79 +60,54 @@ public class ScenarioServiceImpl implements ScenarioService {
         scenario.setHubId(hubId);
         scenario.setName(event.getName());
 
-        scenario = scenarioRepository.save(scenario);
+        Map<String, Sensor> sensors = loadSensorsToMap(event);
 
-        Map<String, Sensor> sensorMap = loadSensorsToMap(event);
+        scenario.getConditions().putAll(buildConditions(event, sensors));
+        scenario.getActions().putAll(buildActions(event, sensors));
 
-        processConditions(event, sensorMap, scenario);
-        processActions(event, sensorMap, scenario);
-
-        log.info("Сценарий создан: id={}, hubId={}, name={}", scenario.getId(), hubId, scenario.getName());
-        return scenario;
+        Scenario saved = scenarioRepository.save(scenario);
+        log.info("Сценарий создан: id={}, hubId={}, name={}",
+                saved.getId(), hubId, saved.getName());
+        return saved;
     }
 
     private Scenario updateScenario(Scenario scenario, ScenarioAddedEventAvro event) {
-        scenarioConditionRepository.deleteByIdScenarioId(scenario.getId());
-        scenarioActionRepository.deleteByIdScenarioId(scenario.getId());
-        conditionRepository.deleteOrphans();
-        actionRepository.deleteOrphans();
+        scenario.getConditions().clear();
+        scenario.getActions().clear();
 
-        Map<String, Sensor> sensorMap = loadSensorsToMap(event);
+        Map<String, Sensor> sensors = loadSensorsToMap(event);
 
-        processConditions(event, sensorMap, scenario);
-        processActions(event, sensorMap, scenario);
+        scenario.getConditions().putAll(buildConditions(event, sensors));
+        scenario.getActions().putAll(buildActions(event, sensors));
 
-        log.info("Сценарий обновлен: id={}, hubId={}, name={}", scenario.getId(),
-                scenario.getHubId(), scenario.getName());
-        return scenario;
+        Scenario saved = scenarioRepository.save(scenario);
+        log.info("Сценарий обновлен: id={}, hubId={}, name={}",
+                saved.getId(), saved.getHubId(), saved.getName());
+        return saved;
     }
 
-    private void processConditions(ScenarioAddedEventAvro event, Map<String, Sensor> sensorMap,
-                                   Scenario scenario) {
-        List<Condition> conditions = new ArrayList<>();
-        List<ScenarioCondition> conditionLinks = new ArrayList<>();
+    private Map<String, Condition> buildConditions(ScenarioAddedEventAvro event, Map<String, Sensor> sensors) {
+        Map<String, Condition> conditions = new HashMap<>();
 
         for (ScenarioConditionAvro c : event.getConditions()) {
-
-            Sensor sensor = sensorMap.get(c.getSensorId());
-
+            Sensor sensor = sensors.get(c.getSensorId());
             Condition condition = conditionConverter.fromAvro(c);
-            conditions.add(condition);
-
-            ScenarioCondition link = new ScenarioCondition();
-            link.setScenario(scenario);
-            link.setSensor(sensor);
-            link.setCondition(condition);
-
-            conditionLinks.add(link);
+            conditions.put(sensor.getId(), condition);
         }
 
-        conditionRepository.saveAll(conditions);
-        scenarioConditionRepository.saveAll(conditionLinks);
+        return conditions;
     }
 
-    private void processActions(ScenarioAddedEventAvro event, Map<String, Sensor> sensorMap,
-                                Scenario scenario) {
-        List<Action> actions = new ArrayList<>();
-        List<ScenarioAction> actionLinks = new ArrayList<>();
+    private Map<String, Action> buildActions(ScenarioAddedEventAvro event, Map<String, Sensor> sensors) {
+        Map<String, Action> actions = new HashMap<>();
 
         for (DeviceActionAvro a : event.getActions()) {
-
-            Sensor sensor = sensorMap.get(a.getSensorId());
-
+            Sensor sensor = sensors.get(a.getSensorId());
             Action action = actionMapper.fromAvro(a);
-            actions.add(action);
-
-            ScenarioAction link = new ScenarioAction();
-            link.setScenario(scenario);
-            link.setSensor(sensor);
-            link.setAction(action);
-
-            actionLinks.add(link);
+            actions.put(sensor.getId(), action);
         }
 
-        actionRepository.saveAll(actions);
-        scenarioActionRepository.saveAll(actionLinks);
+        return actions;
     }
 
     private Map<String, Sensor> loadSensorsToMap(ScenarioAddedEventAvro event) {

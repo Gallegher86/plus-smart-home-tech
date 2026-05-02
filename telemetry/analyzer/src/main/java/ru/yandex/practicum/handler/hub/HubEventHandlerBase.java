@@ -1,6 +1,7 @@
 package ru.yandex.practicum.handler.hub;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.exception.UnsupportedPayloadTypeException;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
 @Slf4j
@@ -21,7 +22,7 @@ public abstract class HubEventHandlerBase<T> implements HubEventHandler {
         Object payload = event.getPayload();
 
         if (!payloadType.isInstance(payload)) {
-            throw new IllegalArgumentException(
+            throw new UnsupportedPayloadTypeException(
                     "Неверный тип payload: " + payload.getClass()
             );
         }
