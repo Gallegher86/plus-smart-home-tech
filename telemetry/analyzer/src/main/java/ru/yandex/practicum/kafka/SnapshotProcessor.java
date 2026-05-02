@@ -7,8 +7,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.service.SnapshotService;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class SnapshotProcessor implements ApplicationRunner {
+public class SnapshotProcessor implements Runnable {
     private final KafkaConsumer<String, SensorsSnapshotAvro> consumer;
     private final SnapshotService snapshotService;
 
@@ -32,6 +32,7 @@ public class SnapshotProcessor implements ApplicationRunner {
     private int processedCount = 0;
 
     public SnapshotProcessor(
+            @Qualifier("snapshotConsumer")
             KafkaConsumer<String, SensorsSnapshotAvro> consumer,
             AnalyzerKafkaProperties properties,
             SnapshotService snapshotService
@@ -45,7 +46,7 @@ public class SnapshotProcessor implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) {
+    public void run() {
         start();
     }
 
@@ -60,8 +61,7 @@ public class SnapshotProcessor implements ApplicationRunner {
                         consumer.poll(pollTimeout);
 
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    snapshotService.handleSnapshot(record.value());
-                    manageOffsets(record, consumer);
+                    processRecord(record, consumer);
                 }
 
                 consumer.commitAsync(currentOffsets, (offsets, ex) -> {
@@ -101,6 +101,23 @@ public class SnapshotProcessor implements ApplicationRunner {
                     consumer.commitSync(offsets);
                 }
             });
+        }
+    }
+
+    private void processRecord(ConsumerRecord<String, SensorsSnapshotAvro> record,
+                               KafkaConsumer<String, SensorsSnapshotAvro> consumer) {
+        try {
+            snapshotService.handleSnapshot(record.value());
+            manageOffsets(record, consumer);
+
+        } catch (Exception ex) {
+            log.error(
+                    "Ошибка обработки snapshot. topic={}, partition={}, offset={}",
+                    record.topic(),
+                    record.partition(),
+                    record.offset(),
+                    ex
+            );
         }
     }
 }
