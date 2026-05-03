@@ -8,7 +8,6 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.service.SnapshotService;
@@ -29,7 +28,6 @@ public class SnapshotProcessor implements Runnable {
     private final int batchSize;
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
-    private int processedCount = 0;
 
     public SnapshotProcessor(
             @Qualifier("snapshotConsumer")
@@ -57,23 +55,31 @@ public class SnapshotProcessor implements Runnable {
             consumer.subscribe(topics);
 
             while (true) {
-                ConsumerRecords<String, SensorsSnapshotAvro> records =
-                        consumer.poll(pollTimeout);
+                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(pollTimeout);
+                int processedCount = 0;
 
-                for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    processRecord(record, consumer);
+                if (records.isEmpty()) {
+                    continue;
                 }
 
-                consumer.commitAsync(currentOffsets, (offsets, ex) -> {
-                    if (ex != null) {
-                        log.warn("commitAsync failed.", ex);
+                try {
+                    for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
+                        snapshotService.handleSnapshot(record.value());
+                        processedCount++;
+                        manageOffsets(record, processedCount);
                     }
-                });
+
+                    consumer.commitAsync();
+
+                } catch (Exception ex) {
+                    log.error("Ошибка обработки Kafka batch. recordsCount={}", records.count(), ex);
+                }
             }
 
         } catch (WakeupException ignored) {
-        } catch (Exception e) {
-            log.error("Ошибка во время обработки снапшотов.", e);
+        } catch (Exception ex) {
+            log.error("Критическая ошибка Kafka consumer loop: topic={}",
+                    topics, ex);
         } finally {
 
             try {
@@ -85,39 +91,18 @@ public class SnapshotProcessor implements Runnable {
         }
     }
 
-    private void manageOffsets(ConsumerRecord<String, SensorsSnapshotAvro> record,
-                               KafkaConsumer<String, SensorsSnapshotAvro> consumer) {
+    private void manageOffsets(ConsumerRecord<String, SensorsSnapshotAvro> record, int processedCount) {
         currentOffsets.put(
                 new TopicPartition(record.topic(), record.partition()),
                 new OffsetAndMetadata(record.offset() + 1)
         );
 
-        processedCount++;
-
         if (processedCount % batchSize == 0) {
             consumer.commitAsync(currentOffsets, (offsets, exception) -> {
-                if (exception != null) {
-                    log.warn("Ошибка commitAsync, делаем commitSync.", exception);
-                    consumer.commitSync(offsets);
+                if(exception != null) {
+                    log.warn("Ошибка во время фиксации оффсетов: {}", offsets, exception);
                 }
             });
-        }
-    }
-
-    private void processRecord(ConsumerRecord<String, SensorsSnapshotAvro> record,
-                               KafkaConsumer<String, SensorsSnapshotAvro> consumer) {
-        try {
-            snapshotService.handleSnapshot(record.value());
-            manageOffsets(record, consumer);
-
-        } catch (Exception ex) {
-            log.error(
-                    "Ошибка обработки snapshot. topic={}, partition={}, offset={}",
-                    record.topic(),
-                    record.partition(),
-                    record.offset(),
-                    ex
-            );
         }
     }
 }

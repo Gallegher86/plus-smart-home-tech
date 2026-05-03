@@ -7,6 +7,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.exception.HandlerNotFoundException;
 import ru.yandex.practicum.handler.hub.HubEventHandler;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
@@ -53,23 +54,28 @@ public class HubEventProcessor implements Runnable {
             consumer.subscribe(List.of(properties.getHubEventConfiguration().getTopic()));
 
             while (true) {
-                ConsumerRecords<String, HubEventAvro> records =
-                        consumer.poll(pollTimeout);
+                ConsumerRecords<String, HubEventAvro> records = consumer.poll(pollTimeout);
 
-                for (ConsumerRecord<String, HubEventAvro> record : records) {
-                    processRecord(record);
+                if (records.isEmpty()) {
+                    continue;
                 }
 
-                consumer.commitAsync((offsets, ex) -> {
-                    if (ex != null) {
-                        log.warn("commit failed", ex);
+                try {
+                    for (ConsumerRecord<String, HubEventAvro> record : records) {
+                        processRecord(record);
                     }
-                });
+
+                    consumer.commitSync();
+
+                } catch (Exception ex) {
+                    log.error("Ошибка обработки Kafka batch. recordsCount={}", records.count(), ex);
+                }
             }
 
         } catch (WakeupException ignored) {
-        } catch (Exception e) {
-            log.error("Ошибка во время обработки сообщений от хаба", e);
+        } catch (Exception ex) {
+            log.error("Критическая ошибка Kafka consumer loop: topic={}",
+                    properties.getHubEventConfiguration().getTopic(), ex);
         } finally {
 
             try {
@@ -82,7 +88,6 @@ public class HubEventProcessor implements Runnable {
     }
 
     private void processRecord(ConsumerRecord<String, HubEventAvro> record) {
-        try {
             HubEventAvro event = record.value();
 
             Object payload = event.getPayload();
@@ -90,19 +95,10 @@ public class HubEventProcessor implements Runnable {
 
             if (handler == null) {
                 log.warn("Нет handler для payload: {}", payload.getClass());
-                return;
+                throw new HandlerNotFoundException(String.format("Нет handler для payload: %s",
+                        payload.getClass().getSimpleName()));
             }
 
             handler.handle(event);
-
-        } catch (Exception ex) {
-            log.error(
-                    "Ошибка обработки сообщения. topic={}, partition={}, offset={}",
-                    record.topic(),
-                    record.partition(),
-                    record.offset(),
-                    ex
-            );
-        }
     }
 }
