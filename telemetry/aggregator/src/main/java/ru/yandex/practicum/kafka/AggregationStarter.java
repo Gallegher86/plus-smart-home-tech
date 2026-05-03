@@ -26,19 +26,19 @@ import java.util.Map;
 public class AggregationStarter implements ApplicationRunner {
     private final KafkaConsumer<String, SensorEventAvro> consumer;
     private final KafkaProducer<String, SensorsSnapshotAvro> producer;
-    private final KafkaProperties properties;
+    private final AggregatorKafkaProperties properties;
     private final AggregatorService service;
-
-    private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
     private final Duration pollTimeout;
     private final int batchSize;
+
+    private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private int processedCount = 0;
 
     public AggregationStarter(
             KafkaConsumer<String, SensorEventAvro> consumer,
             KafkaProducer<String, SensorsSnapshotAvro> producer,
-            KafkaProperties properties,
+            AggregatorKafkaProperties properties,
             AggregatorService service
     ) {
         this.consumer = consumer;
@@ -55,7 +55,7 @@ public class AggregationStarter implements ApplicationRunner {
         start();
     }
 
-    public void start() {
+    private void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
         try {
