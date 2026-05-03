@@ -33,7 +33,6 @@ public class AggregationStarter implements ApplicationRunner {
     private final int batchSize;
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
-    private int processedCount = 0;
 
     public AggregationStarter(
             KafkaConsumer<String, SensorEventAvro> consumer,
@@ -62,24 +61,31 @@ public class AggregationStarter implements ApplicationRunner {
             consumer.subscribe(List.of(properties.getConsumer().getSensorTopic()));
 
             while (true) {
-                ConsumerRecords<String, SensorEventAvro> records =
-                        consumer.poll(pollTimeout);
+                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(pollTimeout);
+                int processedCount = 0;
 
-                for (ConsumerRecord<String, SensorEventAvro> record : records) {
-                    handleRecord(record, producer);
-                    manageOffsets(record, consumer);
+                if (records.isEmpty()) {
+                    continue;
                 }
 
-                consumer.commitAsync(currentOffsets, (offsets, ex) -> {
-                    if (ex != null) {
-                        log.warn("commitAsync failed", ex);
+                try {
+                    for (ConsumerRecord<String, SensorEventAvro> record : records) {
+                        handleRecord(record, producer);
+                        processedCount++;
+                        manageOffsets(record, processedCount);
                     }
-                });
+
+                    consumer.commitAsync();
+
+                } catch (Exception ex) {
+                    log.error("Ошибка обработки Kafka batch. recordsCount={}", records.count(), ex);
+                }
             }
 
         } catch (WakeupException ignored) {
-        } catch (Exception e) {
-            log.error("Ошибка во время обработки событий от датчиков", e);
+        } catch (Exception ex) {
+            log.error("Критическая ошибка Kafka consumer loop: topic={}",
+                    properties.getConsumer().getSensorTopic(), ex);
         } finally {
 
             try {
@@ -103,14 +109,11 @@ public class AggregationStarter implements ApplicationRunner {
                         .send(new ProducerRecord<>(topic, snapshot.getHubId(), snapshot)));
     }
 
-    private void manageOffsets(ConsumerRecord<String, SensorEventAvro> record,
-                               KafkaConsumer<String, SensorEventAvro> consumer) {
+    private void manageOffsets(ConsumerRecord<String, SensorEventAvro> record, int processedCount) {
         currentOffsets.put(
                 new TopicPartition(record.topic(), record.partition()),
                 new OffsetAndMetadata(record.offset() + 1)
         );
-
-        processedCount++;
 
         if (processedCount % batchSize == 0) {
             consumer.commitAsync(currentOffsets, (offsets, exception) -> {

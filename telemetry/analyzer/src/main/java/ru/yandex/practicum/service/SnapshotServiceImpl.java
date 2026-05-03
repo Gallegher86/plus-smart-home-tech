@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.client.HubRouterClient;
+import ru.yandex.practicum.exception.HubRouterSendException;
 import ru.yandex.practicum.exception.UnsupportedPayloadTypeException;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
 import ru.yandex.practicum.handler.sensor.SensorEventHandler;
@@ -134,11 +135,10 @@ public class SnapshotServiceImpl implements SnapshotService {
     private void safeSend(DeviceActionRequest request, String sensorId, String scenarioName) {
         try {
             hubRouterClient.send(request);
-        } catch (Exception e) {
-            log.error("Отправка gRPC провалилась: scenario={}, sensorId={}",
-                    scenarioName,
-                    sensorId,
-                    e);
+        } catch (Exception ex) {
+            String errorMessage = String.format("Отправка gRPC-сообщения провалилась: scenario=%s, sensorId=%s",
+                    scenarioName, sensorId);
+            throw new HubRouterSendException(errorMessage, ex);
         }
     }
 }
