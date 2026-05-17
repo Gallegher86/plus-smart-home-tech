@@ -3,10 +3,10 @@ server:
 
 spring:
   application:
-    name: warehouse
+    name: shopping-store
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/warehouse
+    url: jdbc:postgresql://localhost:5433/shopping_store
     username: main
     password: main
     driver-class-name: org.postgresql.Driver

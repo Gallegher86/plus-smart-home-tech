@@ -13,6 +13,7 @@ import ru.yandex.practicum.dto.store.ProductDto;
 import ru.yandex.practicum.dto.store.SetProductQuantityState;
 import ru.yandex.practicum.dto.store.UpdatedProductDto;
 import ru.yandex.practicum.enums.ProductCategory;
+import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.service.ShoppingStoreService;
 import ru.yandex.practicum.utils.PaginationConstants;
 
@@ -40,33 +41,41 @@ public class ShoppingStoreController {
     }
 
     @PutMapping
-    public  ProductDto addNewProduct(@RequestBody @Valid NewProductDto newProduct) {
-        log.info("Получен PUT-запрос на добавление нового товара {}.", newProduct);
-        return shoppingStoreService.addNewProduct(newProduct);
+    public  ProductDto addProduct(@RequestBody @Valid NewProductDto newProduct) {
+        log.info("Получен PUT-запрос на добавление нового товара {}.", newProduct.getProductName());
+        return shoppingStoreService.addProduct(newProduct);
     }
 
     @PostMapping
-    public ProductDto updateExistingProduct(@RequestBody @Valid UpdatedProductDto updatedProduct) {
-        log.info("Получен POST-запрос на обновление данных товара {}.", updatedProduct);
-        return shoppingStoreService.updateExistingProduct(updatedProduct);
+    public ProductDto updateProduct(@RequestBody @Valid UpdatedProductDto updatedProduct) {
+        log.info("Получен POST-запрос на обновление данных товара с id {}.",
+                updatedProduct.getProductId());
+        return shoppingStoreService.updateProduct(updatedProduct);
     }
 
     @PostMapping("/removeProductFromStore")
-    public boolean removeProduct(@RequestBody UUID productId) {
+    public boolean deactivateProduct(@RequestBody UUID productId) {
         log.info("Получен POST-запрос на удаление товара с productId {} из магазина.", productId);
-        return shoppingStoreService.removeProduct(productId);
+        return shoppingStoreService.deactivateProduct(productId);
     }
 
     @PostMapping("/quantityState")
-    public boolean setProductQuantityState(@RequestBody @Valid SetProductQuantityState quantityState) {
-        log.info("Получен POST-запрос на изменение количества товара {}.", quantityState);
-        return shoppingStoreService.setProductQuantityState(quantityState);
+    public boolean setProductQuantityState(@RequestParam UUID productId,
+                                           @RequestParam QuantityState quantityState) {
+        log.info("Получен POST-запрос на изменение количества товара с id {} на {}.",
+                productId, quantityState);
+
+        SetProductQuantityState request = SetProductQuantityState.builder()
+                .productId(productId)
+                .quantityState(quantityState)
+                .build();
+
+        return shoppingStoreService.setProductQuantityState(request);
     }
 
     @GetMapping("/{productId}")
-    public ProductDto getProductById(@RequestParam UUID productId) {
+    public ProductDto getProductById(@PathVariable UUID productId) {
         log.info("Получен GET-запрос на просмотр товара с productId {}.", productId);
         return shoppingStoreService.getProductById(productId);
     }
-
 }

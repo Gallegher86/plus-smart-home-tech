@@ -1,8 +1,6 @@
 package ru.yandex.practicum.dto.store;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Value;
 import ru.yandex.practicum.enums.ProductCategory;
@@ -15,12 +13,14 @@ import java.math.BigDecimal;
 @Builder
 public class NewProductDto {
     @NotBlank
+    @Size(min = 3, max = 255, message = "Название товара должно содержать от 3 до 255 символов.")
     String productName;
 
     @NotBlank
     String description;
 
     @NotBlank
+    @Size(min = 3, max = 512, message = "Ссылка на изображение товара должна содержать от 3 до 512 символов.")
     String imageSrc;
 
     @NotNull
@@ -33,6 +33,6 @@ public class NewProductDto {
     ProductCategory productCategory;
 
     @NotNull
-    @Positive
+    @PositiveOrZero
     BigDecimal price;
 }
