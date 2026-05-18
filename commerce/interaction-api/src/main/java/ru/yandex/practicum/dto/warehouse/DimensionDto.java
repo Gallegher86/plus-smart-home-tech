@@ -10,7 +10,7 @@ import lombok.Value;
 public class DimensionDto {
     @NotNull
     @DecimalMin("1.0")
-    Double wight;
+    Double width;
 
     @NotNull
     @DecimalMin("1.0")

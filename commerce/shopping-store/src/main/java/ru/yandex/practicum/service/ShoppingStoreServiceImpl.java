@@ -105,7 +105,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     }
 
     private Product findProductOrElseThrow(UUID productId) {
-        return repository.findByProductId(productId)
+        return repository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Товар с id: " + productId + " не найден."));
     }
 }

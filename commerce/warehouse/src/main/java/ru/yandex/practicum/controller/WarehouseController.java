@@ -23,19 +23,19 @@ public class WarehouseController {
     @PutMapping
     public void addNewProduct(@RequestBody @Valid
                                              NewProductInWarehouseRequest newProductRequest) {
-        log.info("Получен PUT-запрос на добавление нового товара на склад {}.", newProductRequest);
+        log.info("Получен PUT-запрос на добавление нового товара с id {} на склад.", newProductRequest.getProductId());
         warehouseService.addNewProduct(newProductRequest);
     }
 
     @PostMapping("/check")
     public BookedProductsDto checkShoppingCart(@RequestBody @Valid ShoppingCartDto shoppingCart) {
-        log.info("Получен POST-запрос на проверку комплектности корзины заказов {}.", shoppingCart);
+        log.info("Получен POST-запрос на проверку комплектности корзины заказов с id {}.", shoppingCart.getShoppingCartId());
         return warehouseService.checkShoppingCart(shoppingCart);
     }
 
     @PostMapping("/add")
     public void addProductQuantity(@RequestBody @Valid AddProductToWarehouseRequest addProductRequest) {
-        log.info("Получен POST-запрос на прием товара на складе {}.", addProductRequest);
+        log.info("Получен POST-запрос на прием товара с id {} на складе.", addProductRequest.getProductId());
         warehouseService.addProductQuantity(addProductRequest);
     }
 

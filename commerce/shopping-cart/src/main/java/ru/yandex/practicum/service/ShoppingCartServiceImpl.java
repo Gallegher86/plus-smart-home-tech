@@ -53,6 +53,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
+    @Transactional
     public ShoppingCartDto removeProducts(String username, List<UUID> products) {
         log.debug("Service. От пользователя {} поступил запрос " +
                 "на удаление товаров из корзины: {}.", username, products);
