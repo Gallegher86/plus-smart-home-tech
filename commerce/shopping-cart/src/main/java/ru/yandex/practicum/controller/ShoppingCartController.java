@@ -2,7 +2,6 @@ package ru.yandex.practicum.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,14 +24,14 @@ public class ShoppingCartController {
     private final ShoppingCartService shoppingCartService;
 
     @GetMapping
-    public ShoppingCartDto getShoppingCart(@RequestParam @NotBlank String username) {
+    public ShoppingCartDto getShoppingCart(@RequestParam String username) {
 
         log.info("От пользователя {} получен GET-запрос на просмотр его корзины.", username);
         return shoppingCartService.getShoppingCart(username);
     }
 
     @PutMapping
-    public ShoppingCartDto addProducts(@RequestParam @NotBlank String username,
+    public ShoppingCartDto addProducts(@RequestParam String username,
                                              @RequestBody @NotEmpty Map<UUID, @Min(1) Long> products) {
         log.info("От пользователя {} получен PUT-запрос на добавление товаров в корзину: {}.",
                 username, products);
@@ -40,13 +39,13 @@ public class ShoppingCartController {
     }
 
     @DeleteMapping
-    public void deleteShoppingCart(@RequestParam @NotBlank String username) {
+    public void deactivateShoppingCart(@RequestParam String username) {
         log.info("От пользователя {} получен DELETE-запрос на удаление его корзины.", username);
-        shoppingCartService.deleteShoppingCart(username);
+        shoppingCartService.deactivateShoppingCart(username);
     }
 
     @PostMapping("/remove")
-    public ShoppingCartDto removeProducts(@RequestParam @NotBlank String username,
+    public ShoppingCartDto removeProducts(@RequestParam String username,
                                                   @RequestBody @NotEmpty List<UUID> products) {
         log.info("От пользователя {} получен POST-запрос на удаление товаров из корзины: {}.",
                 username, products);
@@ -54,7 +53,7 @@ public class ShoppingCartController {
     }
 
     @PostMapping("/change-quantity")
-    public ShoppingCartDto changeProductsQuantity(@RequestParam @NotBlank String username,
+    public ShoppingCartDto changeProductsQuantity(@RequestParam String username,
                                                   @RequestBody @Valid ChangeProductQuantityRequest request) {
         log.info("От пользователя {} получен POST-запрос на изменение количества товара из корзине: {}.",
                 username, request);
