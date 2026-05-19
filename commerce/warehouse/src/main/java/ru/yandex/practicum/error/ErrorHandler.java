@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
-import ru.yandex.practicum.exceptions.store.ProductNotFoundException;
+import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
+import ru.yandex.practicum.exceptions.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.exceptions.warehouse.SpecifiedProductAlreadyInWarehouseException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +20,6 @@ import java.util.List;
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(
@@ -38,27 +39,65 @@ public class ErrorHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .error(ErrorCodes.VALIDATION_FAILED)
                 .message(ErrorCodes.VALIDATION_FAILED.getMessage())
-                .userMessage("Проверьте корректность заполнения полей.")
+                .userMessage("Проверьте корректность заполнения полей")
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .validationErrors(errors)
                 .build();
     }
 
-    @ExceptionHandler(ProductNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleProductNotFoundException(
-            ProductNotFoundException ex,
+    @ExceptionHandler(NoSpecifiedProductInWarehouseException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleNoSpecifiedProductException(
+            NoSpecifiedProductInWarehouseException ex,
             HttpServletRequest request
     ) {
 
-        log.warn("Товар не найден: {}", ex.getMessage());
+        log.warn("Товар на складе не найден: {}", ex.getMessage());
 
         return ErrorResponse.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .error(ErrorCodes.PRODUCT_NOT_FOUND)
+                .status(HttpStatus.BAD_REQUEST)
+                .error(ErrorCodes.NO_PRODUCT_IN_WAREHOUSE)
                 .message(ex.getMessage())
-                .userMessage(ErrorCodes.PRODUCT_NOT_FOUND.getMessage())
+                .userMessage(ErrorCodes.NO_PRODUCT_IN_WAREHOUSE.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(ProductInShoppingCartLowQuantityInWarehouse.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleProductInShoppingCartLowQuantityException(
+            ProductInShoppingCartLowQuantityInWarehouse ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Недостаточно товара на складе: {}", ex.getMessage());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .error(ErrorCodes.LOW_QUANTITY_IN_WAREHOUSE)
+                .message(ex.getMessage())
+                .userMessage(ErrorCodes.LOW_QUANTITY_IN_WAREHOUSE.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(SpecifiedProductAlreadyInWarehouseException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleSpecifiedProductAlreadyInWarehouseException(
+            SpecifiedProductAlreadyInWarehouseException ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Товар уже зарегистрирован на складе: {}", ex.getMessage());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .error(ErrorCodes.PRODUCT_ALREADY_IN_WAREHOUSE)
+                .message(ex.getMessage())
+                .userMessage(ErrorCodes.PRODUCT_ALREADY_IN_WAREHOUSE.getMessage())
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();

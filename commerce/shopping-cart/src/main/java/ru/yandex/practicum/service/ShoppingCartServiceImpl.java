@@ -5,12 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.cart.ChangeProductQuantityRequest;
-import ru.yandex.practicum.dto.cart.ShoppingCartDto;
 import ru.yandex.practicum.enums.ShoppingCartState;
 import ru.yandex.practicum.exceptions.cart.NoProductsInShoppingCartException;
 import ru.yandex.practicum.exceptions.cart.NotAuthorizedUserException;
 import ru.yandex.practicum.exceptions.cart.ShoppingCartNotFoundException;
-import ru.yandex.practicum.mapper.ShoppingCartMapper;
 import ru.yandex.practicum.model.ShoppingCart;
 import ru.yandex.practicum.repository.ShoppingCartRepository;
 
@@ -21,24 +19,14 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final ShoppingCartRepository repository;
-    private final ShoppingCartMapper mapper;
 
     @Override
     @Transactional
-    public ShoppingCartDto getShoppingCart(String username) {
+    public ShoppingCart getShoppingCart(String username) {
         log.debug("Service. От пользователя {} поступил запрос на создание " +
                 "или просмотр существующей корзины.", username);
         validateUsername(username);
-        ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
-        return mapper.toShoppingCartDto(shoppingCart);
-    }
-
-    @Override
-    public ShoppingCartDto addProducts(String username, Map<UUID, Long> products) {
-        validateUsername(username);
-
-        ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
-        return mapper.toShoppingCartDto(shoppingCart);
+        return getOrCreateShoppingCart(username);
     }
 
     @Override
@@ -54,7 +42,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto removeProducts(String username, List<UUID> products) {
+    public ShoppingCart removeProducts(String username, List<UUID> products) {
         log.debug("Service. От пользователя {} поступил запрос " +
                 "на удаление товаров из корзины: {}.", username, products);
         validateUsername(username);
@@ -73,12 +61,24 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         products.forEach(productsInCart::remove);
 
         log.info("Service. Из корзины пользователя {} удалены товары: {}.", username, products);
-        return mapper.toShoppingCartDto(shoppingCart);
+        return shoppingCart;
     }
 
     @Override
     @Transactional
-    public ShoppingCartDto changeProductsQuantity(String username, ChangeProductQuantityRequest request) {
+    public ShoppingCart addProducts(String username, Map<UUID, Long> products) {
+        log.debug("Service. От пользователя {} поступил запрос на " +
+                "добавление {} товаров в корзину.", username, products.size());
+        ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
+        shoppingCart.getProducts().putAll(products);
+        log.info("Service. Запрос от пользователя {} о добавлении {} товаров в корзину обработан.",
+                username, products.size());
+        return shoppingCart;
+    }
+
+    @Override
+    @Transactional
+    public ShoppingCart changeProductsQuantity(String username, ChangeProductQuantityRequest request) {
         log.debug("Service. От пользователя {} поступил запрос " +
                 "на изменение количества товара с id {} в корзине.", username, request.getProductId());
         validateUsername(username);
@@ -101,7 +101,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 request.getNewQuantity()
         );
 
-        return mapper.toShoppingCartDto(shoppingCart);
+        return shoppingCart;
     }
 
     private ShoppingCart getOrCreateShoppingCart(String username) {

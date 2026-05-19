@@ -21,8 +21,7 @@ public class WarehouseController {
     private final WarehouseService warehouseService;
 
     @PutMapping
-    public void addNewProduct(@RequestBody @Valid
-                                             NewProductInWarehouseRequest newProductRequest) {
+    public void addNewProduct(@RequestBody @Valid NewProductInWarehouseRequest newProductRequest) {
         log.info("Получен PUT-запрос на добавление нового товара с id {} на склад.", newProductRequest.getProductId());
         warehouseService.addNewProduct(newProductRequest);
     }

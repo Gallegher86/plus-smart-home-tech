@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.cart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
-import ru.yandex.practicum.service.ShoppingCartService;
+import ru.yandex.practicum.facade.ShoppingCartFacade;
 
 import java.util.List;
 import java.util.Map;
@@ -21,13 +21,13 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/shopping-cart")
 @RequiredArgsConstructor
 public class ShoppingCartController {
-    private final ShoppingCartService shoppingCartService;
+    private final ShoppingCartFacade shoppingCartFacade;
 
     @GetMapping
     public ShoppingCartDto getShoppingCart(@RequestParam String username) {
 
         log.info("От пользователя {} получен GET-запрос на просмотр его корзины.", username);
-        return shoppingCartService.getShoppingCart(username);
+        return shoppingCartFacade.getShoppingCart(username);
     }
 
     @PutMapping
@@ -35,13 +35,13 @@ public class ShoppingCartController {
                                              @RequestBody @NotEmpty Map<UUID, @Min(1) Long> products) {
         log.info("От пользователя {} получен PUT-запрос на добавление товаров в корзину: {}.",
                 username, products);
-        return shoppingCartService.addProducts(username, products);
+        return shoppingCartFacade.addProducts(username, products);
     }
 
     @DeleteMapping
     public void deactivateShoppingCart(@RequestParam String username) {
         log.info("От пользователя {} получен DELETE-запрос на удаление его корзины.", username);
-        shoppingCartService.deactivateShoppingCart(username);
+        shoppingCartFacade.deactivateShoppingCart(username);
     }
 
     @PostMapping("/remove")
@@ -49,7 +49,7 @@ public class ShoppingCartController {
                                                   @RequestBody @NotEmpty List<UUID> products) {
         log.info("От пользователя {} получен POST-запрос на удаление товаров из корзины: {}.",
                 username, products);
-        return shoppingCartService.removeProducts(username, products);
+        return shoppingCartFacade.removeProducts(username, products);
     }
 
     @PostMapping("/change-quantity")
@@ -57,6 +57,6 @@ public class ShoppingCartController {
                                                   @RequestBody @Valid ChangeProductQuantityRequest request) {
         log.info("От пользователя {} получен POST-запрос на изменение количества товара из корзине: {}.",
                 username, request);
-        return shoppingCartService.changeProductsQuantity(username, request);
+        return shoppingCartFacade.changeProductsQuantity(username, request);
     }
 }
