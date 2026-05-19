@@ -15,6 +15,7 @@ import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exceptions.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.exceptions.warehouse.WarehouseServiceUnavailableException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -138,6 +139,25 @@ public class ErrorHandler {
                 .error(ErrorCodes.LOW_QUANTITY_IN_WAREHOUSE)
                 .message(ex.getMessage())
                 .userMessage(ErrorCodes.LOW_QUANTITY_IN_WAREHOUSE.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(WarehouseServiceUnavailableException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ErrorResponse handleWarehouseServiceUnavailableException(
+            WarehouseServiceUnavailableException ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Сервис склада недоступен: {}", ex.getMessage());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .error(ErrorCodes.WAREHOUSE_SERVICE_UNAVAILABLE)
+                .message(ex.getMessage())
+                .userMessage(ErrorCodes.WAREHOUSE_SERVICE_UNAVAILABLE.getMessage())
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();
