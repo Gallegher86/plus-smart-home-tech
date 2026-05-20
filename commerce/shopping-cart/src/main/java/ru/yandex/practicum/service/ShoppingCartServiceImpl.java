@@ -30,6 +30,14 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ShoppingCart getActiveShoppingCart(String username) {
+        log.debug("Service. От пользователя {} поступил запрос на просмотр активной корзины.", username);
+        validateUsername(username);
+        return findActiveShoppingCartOrThrow(username);
+    }
+
+    @Override
     @Transactional
     public void deactivateShoppingCart(String username) {
         log.debug("Service. От пользователя {} поступил запрос на деактивацию корзины.", username);
@@ -70,7 +78,12 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         log.debug("Service. От пользователя {} поступил запрос на " +
                 "добавление {} товаров в корзину.", username, products.size());
         ShoppingCart shoppingCart = getOrCreateShoppingCart(username);
-        shoppingCart.getProducts().putAll(products);
+        Map<UUID, Long> cartProducts = shoppingCart.getProducts();
+
+        products.forEach((productId, quantity) ->
+                cartProducts.merge(productId, quantity, Long::sum)
+        );
+
         log.info("Service. Запрос от пользователя {} о добавлении {} товаров в корзину обработан.",
                 username, products.size());
         return shoppingCart;
@@ -81,27 +94,27 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCart changeProductsQuantity(String username, ChangeProductQuantityRequest request) {
         log.debug("Service. От пользователя {} поступил запрос " +
                 "на изменение количества товара с id {} в корзине.", username, request.getProductId());
-        validateUsername(username);
         ShoppingCart shoppingCart = findActiveShoppingCartOrThrow(username);
         UUID productId = request.getProductId();
         Map<UUID, Long> productsInCart = shoppingCart.getProducts();
-
         Long oldQuantity = productsInCart.replace(productId, request.getNewQuantity());
 
-        if (oldQuantity == null) {
-            throw new NoProductsInShoppingCartException("В корзине пользователя: " + username +
-                            " нет товара с id: " + productId);
-        }
-
         log.info(
-                "Service. В корзине пользователя {} количество товара {} изменено: {} -> {}.",
+                "Service. В корзине пользователя {} количество товара с id {} изменено: {} -> {}.",
                 username,
                 productId,
                 oldQuantity,
-                request.getNewQuantity()
+                productsInCart.get(productId)
         );
 
         return shoppingCart;
+    }
+
+    @Override
+    public void validateProductExists(UUID productId, ShoppingCart shoppingCart) {
+        if (!shoppingCart.getProducts().containsKey(productId)) {
+            throw new NoProductsInShoppingCartException("В корзине нет товара с id: " + productId);
+        }
     }
 
     private ShoppingCart getOrCreateShoppingCart(String username) {
@@ -112,13 +125,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
 
         ShoppingCart shoppingCart = shoppingCartOpt.get();
-        UUID shoppingCartId = shoppingCart.getShoppingCartId();
-        if (shoppingCart.getState() == ShoppingCartState.DEACTIVATE) {
-            log.debug("Service. Корзина с id {} имеет статус DEACTIVE, обновление статуса на ACTIVE.", shoppingCartId);
-            return activateShoppingCart(shoppingCart);
-        }
-
-        log.info("Service. Корзина с id {} найдена.", shoppingCartId);
+        log.info("Service. Корзина с id {} найдена.", shoppingCart.getShoppingCartId());
         return shoppingCart;
     }
 
@@ -130,14 +137,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         shoppingCart = repository.save(shoppingCart);
         log.info("Service. Для пользователя {} создана новая корзина, присвоен id: {}.",
                 username, shoppingCart.getShoppingCartId());
-        return shoppingCart;
-    }
-
-    private ShoppingCart activateShoppingCart(ShoppingCart shoppingCart) {
-        shoppingCart.setState(ShoppingCartState.ACTIVE);
-        shoppingCart.getProducts().clear();
-        log.info("Service. Корзина с id {} переведена в статус ACTIVE, список покупок обнулен.",
-                shoppingCart.getShoppingCartId());
         return shoppingCart;
     }
 

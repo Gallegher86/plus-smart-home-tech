@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.client.ShoppingStoreClient;
 import ru.yandex.practicum.dto.store.NewProductDto;
 import ru.yandex.practicum.dto.store.ProductDto;
 import ru.yandex.practicum.dto.store.SetProductQuantityState;
@@ -26,7 +27,7 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 @RestController
 @RequestMapping(path = "/api/v1/shopping-store")
 @RequiredArgsConstructor
-public class ShoppingStoreController {
+public class ShoppingStoreController implements ShoppingStoreClient {
     private final ShoppingStoreService shoppingStoreService;
 
     @GetMapping

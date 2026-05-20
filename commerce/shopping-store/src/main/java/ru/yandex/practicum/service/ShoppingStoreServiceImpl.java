@@ -32,7 +32,8 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     public Page<ProductDto> getProductsByCategory(ProductCategory category, Pageable pageable) {
         log.debug("Service. Обработка запроса на просмотр товаров категории {} с пагинацией {}.",
                 category, pageable);
-        Page<Product> searchResult = repository.findByProductCategory(category, pageable);
+        Page<Product> searchResult = repository.findByProductCategoryAndProductState(category,
+                ProductState.ACTIVE, pageable);
         log.info("Service. Запрос на просмотр товаров категории {} обработан. " +
                 "Количество найденных записей: {}", category, searchResult.getContent().size());
         return searchResult.map(mapper::toProductDto);

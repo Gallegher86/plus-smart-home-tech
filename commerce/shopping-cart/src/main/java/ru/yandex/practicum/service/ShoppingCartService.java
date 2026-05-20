@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface ShoppingCartService {
     ShoppingCart getShoppingCart(String username);
 
+    ShoppingCart getActiveShoppingCart(String username);
+
     void deactivateShoppingCart(String username);
 
     ShoppingCart removeProducts(String username, List<UUID> products);
@@ -17,4 +19,6 @@ public interface ShoppingCartService {
     ShoppingCart addProducts(String username, Map<UUID, Long> products);
 
     ShoppingCart changeProductsQuantity(String username, ChangeProductQuantityRequest request);
+
+    void validateProductExists(UUID productId, ShoppingCart shoppingCart);
 }

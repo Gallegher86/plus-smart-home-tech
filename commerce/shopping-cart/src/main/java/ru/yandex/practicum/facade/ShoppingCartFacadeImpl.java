@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.cart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
+import ru.yandex.practicum.exceptions.cart.NoProductsInShoppingCartException;
 import ru.yandex.practicum.mapper.ShoppingCartMapper;
 import ru.yandex.practicum.model.ShoppingCart;
 import ru.yandex.practicum.service.ShoppingCartService;
@@ -39,16 +40,27 @@ public class ShoppingCartFacadeImpl implements ShoppingCartFacade{
     @Override
     public ShoppingCartDto addProducts(String username, Map<UUID, Long> products) {
         ShoppingCart cart = service.getShoppingCart(username);
+
         ShoppingCartDto draft = mapper.toShoppingCartDto(cart);
         draft.getProducts().putAll(products);
         warehouseClient.checkShoppingCart(draft);
+
         cart = service.addProducts(username, products);
         return mapper.toShoppingCartDto(cart);
     }
 
     @Override
     public ShoppingCartDto changeProductsQuantity(String username, ChangeProductQuantityRequest request) {
-        ShoppingCart shoppingCart = service.changeProductsQuantity(username, request);
-        return mapper.toShoppingCartDto(shoppingCart);
+        ShoppingCart cart = service.getActiveShoppingCart(username);
+
+        UUID productId = request.getProductId();
+        service.validateProductExists(productId, cart);
+
+        ShoppingCartDto draft = mapper.toShoppingCartDto(cart);
+        draft.getProducts().put(productId, request.getNewQuantity());
+        warehouseClient.checkShoppingCart(draft);
+
+        cart = service.changeProductsQuantity(username, request);
+        return mapper.toShoppingCartDto(cart);
     }
 }
