@@ -41,7 +41,12 @@ public class ShoppingCartFacadeImpl implements ShoppingCartFacade{
         ShoppingCart cart = service.getShoppingCart(username);
 
         ShoppingCartDto draft = mapper.toShoppingCartDto(cart);
-        draft.getProducts().putAll(products);
+        Map<UUID, Long> productsInDraft = draft.getProducts();
+
+        products.forEach((productId, quantity) ->
+                productsInDraft.merge(productId, quantity, Long::sum)
+        );
+
         warehouseClient.checkShoppingCart(draft);
 
         cart = service.addProducts(username, products);
