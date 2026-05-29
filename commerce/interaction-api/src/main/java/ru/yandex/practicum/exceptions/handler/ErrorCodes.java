@@ -10,7 +10,9 @@ public enum ErrorCodes {
     WAREHOUSE_SERVICE_UNAVAILABLE("Сервер склада недоступен."),
     NOT_AUTHORIZED_USER("Авторизация пользователя не пройдена."),
     SHOPPING_CART_NOT_FOUND("Корзина не найдена."),
-    PRODUCT_IN_CART_NOT_FOUND("Товар в корзине не найден.");
+    PRODUCT_IN_CART_NOT_FOUND("Товар в корзине не найден."),
+    ORDER_BOOKING_ALREADY_EXIST("Товар на складе для заказа уже забронирован."),
+    ORDER_BOOKING_NOT_FOUND("Бронь на складе для заказа не найдена.");
 
     private final String message;
 

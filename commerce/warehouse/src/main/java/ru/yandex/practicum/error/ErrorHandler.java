@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
-import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
-import ru.yandex.practicum.exceptions.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
-import ru.yandex.practicum.exceptions.warehouse.SpecifiedProductAlreadyInWarehouseException;
+import ru.yandex.practicum.exceptions.warehouse.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -98,6 +96,44 @@ public class ErrorHandler {
                 .error(ErrorCodes.PRODUCT_ALREADY_IN_WAREHOUSE)
                 .message(ex.getMessage())
                 .userMessage(ErrorCodes.PRODUCT_ALREADY_IN_WAREHOUSE.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(OrderBookingAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleOrderBookingAlreadyExistsException(
+            OrderBookingAlreadyExistsException ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Для заказа уже создана бронь на складе: {}", ex.getMessage());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .error(ErrorCodes.ORDER_BOOKING_ALREADY_EXIST)
+                .message(ex.getMessage())
+                .userMessage(ErrorCodes.ORDER_BOOKING_ALREADY_EXIST.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(OrderBookingNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleOrderBookingNotFoundException(
+            OrderBookingNotFoundException ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Бронь для заказа на складе не найдена: {}", ex.getMessage());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .error(ErrorCodes.ORDER_BOOKING_NOT_FOUND)
+                .message(ex.getMessage())
+                .userMessage(ErrorCodes.ORDER_BOOKING_NOT_FOUND.getMessage())
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();
