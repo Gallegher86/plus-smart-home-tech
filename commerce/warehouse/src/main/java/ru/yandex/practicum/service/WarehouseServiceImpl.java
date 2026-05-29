@@ -80,6 +80,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .city(CURRENT_ADDRESS)
                 .street(CURRENT_ADDRESS)
                 .house(CURRENT_ADDRESS)
+                .flat(CURRENT_ADDRESS)
                 .build();
     }
 
