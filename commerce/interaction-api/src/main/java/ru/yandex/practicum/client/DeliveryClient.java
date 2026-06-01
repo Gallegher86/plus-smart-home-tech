@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.dto.delivery.DeliveryDto;
+import ru.yandex.practicum.dto.delivery.NewDeliveryDto;
 import ru.yandex.practicum.dto.order.OrderDto;
 
 import java.math.BigDecimal;
@@ -13,16 +14,16 @@ import java.util.UUID;
 @FeignClient(name = "delivery", path = "/api/v1/delivery")
 public interface DeliveryClient {
     @PutMapping
-    DeliveryDto createDelivery(@RequestBody DeliveryDto request);
+    DeliveryDto createDelivery(@RequestBody NewDeliveryDto request);
 
     @PostMapping("/successful")
-    void handleSuccessfulDelivery(@RequestBody UUID orderId);
+    void handleSuccessfulDelivery(@RequestBody UUID deliveryId);
 
     @PostMapping("/picked")
-    void handlePickedOrder(@RequestBody UUID orderId);
+    void handlePickedDelivery(@RequestBody UUID deliveryId);
 
     @PostMapping("/failed")
-    void handleFailedDelivery(@RequestBody UUID orderId);
+    void handleFailedDelivery(@RequestBody UUID deliveryId);
 
     @PostMapping("/cost")
     BigDecimal calculateDeliveryCost(@RequestBody OrderDto request);

@@ -12,7 +12,8 @@ public enum ErrorCodes {
     SHOPPING_CART_NOT_FOUND("Корзина не найдена."),
     PRODUCT_IN_CART_NOT_FOUND("Товар в корзине не найден."),
     ORDER_BOOKING_ALREADY_EXIST("Товар на складе для заказа уже забронирован."),
-    ORDER_BOOKING_NOT_FOUND("Бронь на складе для заказа не найдена.");
+    ORDER_BOOKING_NOT_FOUND("Бронь на складе для заказа не найдена."),
+    DELIVERY_NOT_FOUND("Доставка не найдена.");
 
     private final String message;
 

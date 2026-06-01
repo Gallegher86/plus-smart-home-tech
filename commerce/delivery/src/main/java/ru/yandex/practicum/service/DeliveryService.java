@@ -1,4 +1,4 @@
-package ru.yandex.practicum.facade;
+package ru.yandex.practicum.service;
 
 import ru.yandex.practicum.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.dto.delivery.NewDeliveryDto;
@@ -7,14 +7,14 @@ import ru.yandex.practicum.dto.order.OrderDto;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public interface DeliveryFacade {
+public interface DeliveryService {
     DeliveryDto createDelivery(NewDeliveryDto request);
 
-    void handleSuccessfulDelivery(UUID deliveryId);
+    DeliveryDto handleSuccessfulDelivery(UUID deliveryId);
 
-    void handlePickedDelivery(UUID deliveryId);
+    DeliveryDto handlePickedDelivery(UUID deliveryId);
 
-    void handleFailedDelivery(UUID deliveryId);
+    DeliveryDto handleFailedDelivery(UUID deliveryId);
 
     BigDecimal calculateDeliveryCost(OrderDto request);
 }

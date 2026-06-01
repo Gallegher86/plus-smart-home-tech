@@ -1,11 +1,14 @@
 package ru.yandex.practicum.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.client.DeliveryClient;
 import ru.yandex.practicum.dto.delivery.DeliveryDto;
+import ru.yandex.practicum.dto.delivery.NewDeliveryDto;
 import ru.yandex.practicum.dto.order.OrderDto;
 import ru.yandex.practicum.facade.DeliveryFacade;
 
@@ -21,31 +24,31 @@ public class DeliveryController implements DeliveryClient {
     private final DeliveryFacade deliveryFacade;
 
     @PutMapping
-    public DeliveryDto createDelivery(@RequestBody DeliveryDto request) {
+    public DeliveryDto createDelivery(@RequestBody @Valid NewDeliveryDto request) {
         log.info("Получен PUT-запрос на создание доставки заказа с id {}.", request.getOrderId());
         return deliveryFacade.createDelivery(request);
     }
 
     @PostMapping("/successful")
-    public void handleSuccessfulDelivery(@RequestBody UUID orderId) {
-        log.info("Получен POST-запрос на фиксацию успешной доставки заказа с id {}.", orderId);
-        deliveryFacade.handleSuccessfulDelivery(orderId);
+    public void handleSuccessfulDelivery(@RequestBody @NotNull UUID deliveryId) {
+        log.info("Получен POST-запрос на фиксацию успешной доставки с id {}.", deliveryId);
+        deliveryFacade.handleSuccessfulDelivery(deliveryId);
     }
 
     @PostMapping("/picked")
-    public void handlePickedOrder(@RequestBody UUID orderId) {
-        log.info("Получен POST-запрос на получение товара в доставку заказа с id {}.", orderId);
-        deliveryFacade.handlePickedOrder(orderId);
+    public void handlePickedDelivery(@RequestBody @NotNull UUID deliveryId) {
+        log.info("Получен POST-запрос на получение товара в доставку с id {}.", deliveryId);
+        deliveryFacade.handlePickedDelivery(deliveryId);
     }
 
     @PostMapping("/failed")
-    public void handleFailedDelivery(@RequestBody UUID orderId) {
-        log.info("Получен POST-запрос на фиксацию ошибки в доставке заказа с id {}.", orderId);
-        deliveryFacade.handleFailedDelivery(orderId);
+    public void handleFailedDelivery(@RequestBody @NotNull UUID deliveryId) {
+        log.info("Получен POST-запрос на фиксацию ошибки в доставке с id {}.", deliveryId);
+        deliveryFacade.handleFailedDelivery(deliveryId);
     }
 
     @PostMapping("/cost")
-    public BigDecimal calculateDeliveryCost(@RequestBody OrderDto request) {
+    public BigDecimal calculateDeliveryCost(@RequestBody @Valid OrderDto request) {
         log.info("Получен POST-запрос на расчет стоимости доставки заказа с id {}.", request.getOrderId());
         return deliveryFacade.calculateDeliveryCost(request);
     }

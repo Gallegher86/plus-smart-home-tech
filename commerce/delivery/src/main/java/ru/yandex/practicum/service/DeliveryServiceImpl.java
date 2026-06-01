@@ -1,0 +1,170 @@
+package ru.yandex.practicum.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.dto.delivery.DeliveryDto;
+import ru.yandex.practicum.dto.delivery.NewDeliveryDto;
+import ru.yandex.practicum.dto.order.OrderDto;
+import ru.yandex.practicum.dto.warehouse.AddressDto;
+import ru.yandex.practicum.enums.DeliveryState;
+import ru.yandex.practicum.enums.WarehouseAddresses;
+import ru.yandex.practicum.exceptions.delivery.NoDeliveryFoundException;
+import ru.yandex.practicum.exceptions.delivery.UnknownWarehouseException;
+import ru.yandex.practicum.exceptions.delivery.OrderValidationException;
+import ru.yandex.practicum.mapper.DeliveryMapper;
+import ru.yandex.practicum.model.Address;
+import ru.yandex.practicum.model.Delivery;
+import ru.yandex.practicum.repository.AddressRepository;
+import ru.yandex.practicum.repository.DeliveryRepository;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class DeliveryServiceImpl implements DeliveryService {
+    private final DeliveryRepository deliveryRepository;
+    private final AddressRepository addressRepository;
+    private final DeliveryMapper deliveryMapper;
+    private final DeliveryPriceCalculator calculator;
+
+    @Override
+    @Transactional
+    public DeliveryDto createDelivery(NewDeliveryDto request) {
+        log.debug("Service. Обработка запроса на регистрацию доставки для заказа с id {}.", request.getOrderId());
+        Address toAddress = findAddressOrCreate(request.getToAddress());
+        Address fromAddress = findAddressOrCreate(request.getFromAddress());
+
+        Delivery delivery = deliveryMapper.toDelivery(request);
+
+        delivery.setToAddress(toAddress);
+        delivery.setFromAddress(fromAddress);
+        delivery.setDeliveryState(DeliveryState.CREATED);
+
+        Delivery savedDelivery = deliveryRepository.save(delivery);
+        log.info("Service. Доставка для заказа с id {} зарегистрирована, присвоен id {}.",
+                savedDelivery.getOrderId(), savedDelivery.getDeliveryId());
+        return deliveryMapper.toDeliveryDto(savedDelivery);
+    }
+
+    @Override
+    @Transactional
+    public DeliveryDto handleSuccessfulDelivery(UUID deliveryId) {
+        log.debug("Service. Обработка запроса на регистрацию успешной доставки с id {}.", deliveryId);
+        Delivery delivery = findDeliveryOrThrow(deliveryId);
+        delivery.setDeliveryState(DeliveryState.DELIVERED);
+        log.info("Service. Запрос на регистрацию успешной доставки с id {} обработан.", deliveryId);
+        return deliveryMapper.toDeliveryDto(delivery);
+    }
+
+    @Override
+    @Transactional
+    public DeliveryDto handlePickedDelivery(UUID deliveryId) {
+        log.debug("Service. Обработка запроса на регистрацию получения товара для доставки с id {}.", deliveryId);
+        Delivery delivery = findDeliveryOrThrow(deliveryId);
+        delivery.setDeliveryState(DeliveryState.IN_PROGRESS);
+        log.info("Service. Запрос на регистрацию получения товара для доставки с id {} обработан.", deliveryId);
+        return deliveryMapper.toDeliveryDto(delivery);
+    }
+
+    @Override
+    @Transactional
+    public DeliveryDto handleFailedDelivery(UUID deliveryId) {
+        log.debug("Service. Обработка запроса на регистрацию неуспешной доставки с id {}.", deliveryId);
+        Delivery delivery = findDeliveryOrThrow(deliveryId);
+        delivery.setDeliveryState(DeliveryState.FAILED);
+        log.info("Service. Запрос на регистрацию неуспешной доставки с id {} обработан.", deliveryId);
+        return deliveryMapper.toDeliveryDto(delivery);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal calculateDeliveryCost(OrderDto request) {
+        log.debug("Service. Обработка запроса на расчет цены доставки заказа с id {}.", request.getOrderId());
+        validateOrderForPriceCalculation(request);
+        Delivery delivery = findDeliveryOrThrow(request.getDeliveryId());
+        
+        WarehouseAddresses warehouseAddress = parseWarehouseAddress(delivery.getFromAddress().getStreet());
+        String deliveryAddress = delivery.getToAddress().getStreet();
+        double weight = request.getDeliveryWeight();
+        double volume = request.getDeliveryVolume();
+        boolean fragile = request.getFragile();
+
+        BigDecimal result = calculator.calculate(
+                warehouseAddress, 
+                deliveryAddress, 
+                weight, 
+                volume, 
+                fragile);
+
+        log.debug("Service. Обработка запроса на расчет цены доставки заказа с id {} проведена, результат: {}.", 
+                request.getOrderId(), result);
+        return result;
+    }
+
+    private Address findAddressOrCreate(AddressDto address) {
+        return addressRepository.findByCountryAndCityAndStreetAndHouseAndFlat(
+                address.getCountry(),
+                address.getCity(),
+                address.getStreet(),
+                address.getHouse(),
+                address.getFlat()).orElseGet(() -> addressRepository.save(deliveryMapper.toAddress(address)));
+    }
+
+    private Delivery findDeliveryOrThrow(UUID deliveryId) {
+        return deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new NoDeliveryFoundException("Доставка с id: " + deliveryId + " не найдена."));
+    }
+
+    public void validateOrderForPriceCalculation(OrderDto order) {
+
+        List<String> errors = new ArrayList<>();
+
+        if (order == null) {
+            throw new OrderValidationException(List.of("Order is null"));
+        }
+
+        if (order.getOrderId() == null) {
+            errors.add("orderId is null");
+        }
+
+        if (order.getDeliveryId() == null) {
+            errors.add("deliveryId is null");
+        }
+
+        if (order.getDeliveryWeight() == null) {
+            errors.add("deliveryWeight is null");
+        } else if (order.getDeliveryWeight() < 0) {
+            errors.add("deliveryWeight < 0");
+        }
+
+        if (order.getDeliveryVolume() == null) {
+            errors.add("deliveryVolume is null");
+        } else if (order.getDeliveryVolume() < 0) {
+            errors.add("deliveryVolume < 0");
+        }
+
+        if (order.getFragile() == null) {
+            errors.add("fragile is null");
+        }
+        
+        if (!errors.isEmpty()) {
+            throw new OrderValidationException(errors);
+        }
+    }
+
+    private WarehouseAddresses parseWarehouseAddress(String address) {
+
+        return Arrays.stream(WarehouseAddresses.values())
+                .filter(a -> a.getStreet().equals(address))
+                .findFirst()
+                .orElseThrow(() ->
+                        new UnknownWarehouseException("Неизвестный адрес склада: " + address));
+    }
+}

@@ -9,16 +9,16 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.client.WarehouseClient;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
 import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
-import ru.yandex.practicum.exceptions.cart.CartValidationException;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exceptions.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.exceptions.warehouse.WarehouseClientException;
 import ru.yandex.practicum.exceptions.warehouse.WarehouseServiceUnavailableException;
 
 @Service
 @RequiredArgsConstructor
-public class WarehouseClientFacade {
+public class WarehouseClientCartFacade {
     private final WarehouseClient warehouseClient;
     private final ObjectMapper objectMapper;
 
@@ -42,11 +42,11 @@ public class WarehouseClientFacade {
                     throw new NoSpecifiedProductInWarehouseException(error.getMessage());
                 }
 
-                throw new CartValidationException("Ошибка проверки корзины сервисом склада.");
+                throw new WarehouseClientException("Неожиданная ошибка обработки ответа сервиса склада.", e);
 
             } catch (JsonProcessingException ex) {
 
-                throw new CartValidationException("Ошибка обработки ответа сервиса склада.");
+                throw new WarehouseClientException("Неожиданная ошибка ответа сервиса склада.", ex);
             }
         }
     }
