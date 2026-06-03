@@ -6,7 +6,7 @@ import ru.yandex.practicum.client.OrderClient;
 import ru.yandex.practicum.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.dto.delivery.NewDeliveryDto;
 import ru.yandex.practicum.dto.delivery.ShippedToDeliveryRequest;
-import ru.yandex.practicum.dto.order.OrderDto;
+import ru.yandex.practicum.dto.order.OrderDtoDelivery;
 import ru.yandex.practicum.exceptions.warehouse.OrderBookingNotFoundException;
 import ru.yandex.practicum.service.DeliveryService;
 
@@ -56,7 +56,7 @@ public class DeliveryFacadeImpl implements DeliveryFacade {
     }
 
     @Override
-    public BigDecimal calculateDeliveryCost(OrderDto request) {
+    public BigDecimal calculateDeliveryCost(OrderDtoDelivery request) {
         return service.calculateDeliveryCost(request);
     }
 }

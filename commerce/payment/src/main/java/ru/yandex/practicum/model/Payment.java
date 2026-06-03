@@ -3,7 +3,6 @@ package ru.yandex.practicum.model;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.yandex.practicum.enums.PaymentState;
-import ru.yandex.practicum.enums.ShoppingCartState;
 
 import java.math.BigDecimal;
 import java.util.UUID;

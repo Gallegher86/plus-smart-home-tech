@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.exceptions.client.ShoppingStoreServiceUnavailableException;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
+import ru.yandex.practicum.exceptions.payment.OrderValidationException;
 import ru.yandex.practicum.exceptions.payment.PaymentNotFoundException;
 
 import java.time.LocalDateTime;
@@ -42,6 +43,26 @@ public class ErrorHandler {
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .validationErrors(errors)
+                .build();
+    }
+
+    @ExceptionHandler(OrderValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleOrderValidationException(
+            OrderValidationException ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Ошибки валидации заказа для расчета цены: {}.", ex.getErrors());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .error(ErrorCodes.VALIDATION_FAILED)
+                .message(ErrorCodes.VALIDATION_FAILED.getMessage())
+                .userMessage("Проверьте корректность заполнения полей")
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .validationErrors(ex.getErrors())
                 .build();
     }
 

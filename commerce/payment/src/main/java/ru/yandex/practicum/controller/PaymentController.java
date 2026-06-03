@@ -1,5 +1,6 @@
 package ru.yandex.practicum.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.client.PaymentClient;
-import ru.yandex.practicum.dto.order.OrderDto;
 import ru.yandex.practicum.dto.order.OrderDtoPayment;
 import ru.yandex.practicum.dto.payment.PaymentDto;
 import ru.yandex.practicum.facade.PaymentFacade;
@@ -25,21 +25,21 @@ public class PaymentController implements PaymentClient {
     private final PaymentFacade paymentFacade;
 
     @PostMapping
-    public PaymentDto createPayment(@RequestBody OrderDtoPayment request) {
+    public PaymentDto createPayment(@RequestBody @Valid OrderDtoPayment request) {
         log.info("Получен POST-запрос на оплату заказа с id {}.",
                 request.getOrderId());
         return paymentFacade.createPayment(request);
     }
 
     @PostMapping("/totalCost")
-    public BigDecimal calculateTotalPrice(@RequestBody OrderDtoPayment request) {
+    public BigDecimal calculateTotalPrice(@RequestBody @Valid OrderDtoPayment request) {
         log.info("Получен POST-запрос на расчет полной стоимости заказа с id {}.",
                 request.getOrderId());
         return paymentFacade.calculateTotalPrice(request);
     }
 
     @PostMapping("/productCost")
-    public BigDecimal calculateProductPrice(@RequestBody OrderDtoPayment request) {
+    public BigDecimal calculateProductPrice(@RequestBody @Valid OrderDtoPayment request) {
         log.info("Получен POST-запрос на расчет стоимости товаров в заказе с id {}.",
                 request.getOrderId());
         return paymentFacade.calculateProductPrice(request);

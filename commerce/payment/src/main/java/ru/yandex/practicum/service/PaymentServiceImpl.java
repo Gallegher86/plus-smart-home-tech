@@ -8,7 +8,7 @@ import ru.yandex.practicum.dto.ProductPrice;
 import ru.yandex.practicum.dto.order.OrderDtoPayment;
 import ru.yandex.practicum.dto.payment.PaymentDto;
 import ru.yandex.practicum.enums.PaymentState;
-import ru.yandex.practicum.exceptions.delivery.OrderValidationException;
+import ru.yandex.practicum.exceptions.payment.OrderValidationException;
 import ru.yandex.practicum.exceptions.payment.PaymentNotFoundException;
 import ru.yandex.practicum.mapper.PaymentMapper;
 import ru.yandex.practicum.model.Payment;

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.client.DeliveryClient;
 import ru.yandex.practicum.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.dto.delivery.NewDeliveryDto;
-import ru.yandex.practicum.dto.order.OrderDto;
+import ru.yandex.practicum.dto.order.OrderDtoDelivery;
 import ru.yandex.practicum.facade.DeliveryFacade;
 
 import java.math.BigDecimal;
@@ -48,7 +48,7 @@ public class DeliveryController implements DeliveryClient {
     }
 
     @PostMapping("/cost")
-    public BigDecimal calculateDeliveryCost(@RequestBody @Valid OrderDto request) {
+    public BigDecimal calculateDeliveryCost(@RequestBody @Valid OrderDtoDelivery request) {
         log.info("Получен POST-запрос на расчет стоимости доставки заказа с id {}.", request.getOrderId());
         return deliveryFacade.calculateDeliveryCost(request);
     }

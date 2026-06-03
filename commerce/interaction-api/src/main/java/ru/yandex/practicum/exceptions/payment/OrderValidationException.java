@@ -1,4 +1,4 @@
-package ru.yandex.practicum.exceptions.delivery;
+package ru.yandex.practicum.exceptions.payment;
 
 import java.util.List;
 
