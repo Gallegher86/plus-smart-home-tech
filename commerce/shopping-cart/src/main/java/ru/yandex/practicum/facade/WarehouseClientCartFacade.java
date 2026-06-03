@@ -13,8 +13,8 @@ import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exceptions.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
-import ru.yandex.practicum.exceptions.warehouse.WarehouseClientException;
-import ru.yandex.practicum.exceptions.warehouse.WarehouseServiceUnavailableException;
+import ru.yandex.practicum.exceptions.client.WarehouseClientException;
+import ru.yandex.practicum.exceptions.client.WarehouseServiceUnavailableException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class WarehouseClientCartFacade {
     private final WarehouseClient warehouseClient;
     private final ObjectMapper objectMapper;
 
-    @CircuitBreaker(name = "warehouse", fallbackMethod = "checkShoppingCartFallback")
+    @CircuitBreaker(name = "warehouseCart", fallbackMethod = "checkShoppingCartFallback")
     public BookedProductsDto checkShoppingCart(ShoppingCartDto shoppingCart) {
         try {
 

@@ -8,12 +8,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.exceptions.delivery.NoDeliveryFoundException;
-import ru.yandex.practicum.exceptions.delivery.OrderValidationException;
+import ru.yandex.practicum.exceptions.client.ShoppingStoreServiceUnavailableException;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
-import ru.yandex.practicum.exceptions.warehouse.OrderBookingNotFoundException;
-import ru.yandex.practicum.exceptions.client.WarehouseServiceUnavailableException;
+import ru.yandex.practicum.exceptions.payment.PaymentNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,78 +45,39 @@ public class ErrorHandler {
                 .build();
     }
 
-    @ExceptionHandler(OrderValidationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleOrderValidationException(
-            OrderValidationException ex,
-            HttpServletRequest request
-    ) {
-
-        log.warn("Заказ не прошел валидацию для расчета цены доставки: {}, {}", ex.getMessage(), ex.getErrors());
-
-        return ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .error(ErrorCodes.VALIDATION_FAILED)
-                .message(ErrorCodes.VALIDATION_FAILED.getMessage())
-                .userMessage("Проверьте корректность заполнения полей заказа")
-                .path(request.getRequestURI())
-                .timestamp(LocalDateTime.now())
-                .validationErrors(ex.getErrors())
-                .build();
-    }
-
-    @ExceptionHandler(OrderBookingNotFoundException.class)
+    @ExceptionHandler(PaymentNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleOrderBookingNotFoundException(
-            OrderBookingNotFoundException ex,
+    public ErrorResponse handlePaymentNotFoundException(
+            PaymentNotFoundException ex,
             HttpServletRequest request
     ) {
 
-        log.warn("Бронь для заказа на складе не найдена: {}", ex.getMessage());
+        log.warn("Сведения об оплате не найдены: {}", ex.getMessage());
 
         return ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND)
-                .error(ErrorCodes.ORDER_BOOKING_NOT_FOUND)
+                .error(ErrorCodes.PAYMENT_NOT_FOUND)
                 .message(ex.getMessage())
-                .userMessage(ErrorCodes.ORDER_BOOKING_NOT_FOUND.getMessage())
+                .userMessage(ErrorCodes.PAYMENT_NOT_FOUND.getMessage())
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
 
-    @ExceptionHandler(NoDeliveryFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNoDeliveryFoundException(
-            NoDeliveryFoundException ex,
-            HttpServletRequest request
-    ) {
-
-        log.warn("Доставка не найдена: {}", ex.getMessage());
-
-        return ErrorResponse.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .error(ErrorCodes.DELIVERY_NOT_FOUND)
-                .message(ex.getMessage())
-                .userMessage(ErrorCodes.DELIVERY_NOT_FOUND.getMessage())
-                .path(request.getRequestURI())
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-
-    @ExceptionHandler(WarehouseServiceUnavailableException.class)
+    @ExceptionHandler(ShoppingStoreServiceUnavailableException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-    public ErrorResponse handleWarehouseServiceUnavailableException(
-            WarehouseServiceUnavailableException ex,
+    public ErrorResponse handleShoppingStoreServiceUnavailableException(
+            ShoppingStoreServiceUnavailableException ex,
             HttpServletRequest request
     ) {
 
-        log.warn("Сервис склада недоступен: {}", ex.getMessage());
+        log.warn("Сервис магазина недоступен: {}", ex.getMessage());
 
         return ErrorResponse.builder()
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .error(ErrorCodes.WAREHOUSE_SERVICE_UNAVAILABLE)
+                .error(ErrorCodes.SHOPPING_STORE_SERVICE_UNAVAILABLE)
                 .message(ex.getMessage())
-                .userMessage(ErrorCodes.WAREHOUSE_SERVICE_UNAVAILABLE.getMessage())
+                .userMessage(ErrorCodes.SHOPPING_STORE_SERVICE_UNAVAILABLE.getMessage())
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();

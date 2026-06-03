@@ -37,7 +37,7 @@ logging:
 resilience4j:
   circuitbreaker:
     instances:
-      warehouse:
+      warehouseCart:
         sliding-window-size: 10
         minimum-number-of-calls: 5
         failure-rate-threshold: 50

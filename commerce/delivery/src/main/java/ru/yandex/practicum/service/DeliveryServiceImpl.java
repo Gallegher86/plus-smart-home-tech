@@ -96,14 +96,14 @@ public class DeliveryServiceImpl implements DeliveryService {
         double volume = request.getDeliveryVolume();
         boolean fragile = request.getFragile();
 
-        BigDecimal result = calculator.calculate(
+        BigDecimal result = calculator.calculateDeliveryPrice(
                 warehouseAddress, 
                 deliveryAddress, 
                 weight, 
                 volume, 
                 fragile);
 
-        log.debug("Service. Обработка запроса на расчет цены доставки заказа с id {} проведена, результат: {}.", 
+        log.info("Service. Обработка запроса на расчет цены доставки заказа с id {} проведена, результат: {}.",
                 request.getOrderId(), result);
         return result;
     }
@@ -118,7 +118,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     private Delivery findDeliveryOrThrow(UUID deliveryId) {
-        return deliveryRepository.findById(deliveryId)
+        return deliveryRepository.findByIdWithAddresses(deliveryId)
                 .orElseThrow(() -> new NoDeliveryFoundException("Доставка с id: " + deliveryId + " не найдена."));
     }
 

@@ -4,6 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.dto.order.OrderDto;
+import ru.yandex.practicum.dto.order.OrderDtoPayment;
 import ru.yandex.practicum.dto.payment.PaymentDto;
 
 import java.math.BigDecimal;
@@ -12,13 +13,13 @@ import java.util.UUID;
 @FeignClient(name = "payment", path = "/api/v1/payment")
 public interface PaymentClient {
     @PostMapping
-    PaymentDto handlePayment(@RequestBody OrderDto request);
+    PaymentDto createPayment(@RequestBody OrderDtoPayment request);
 
     @PostMapping("/totalCost")
-    BigDecimal calculateTotalCost(@RequestBody OrderDto request);
+    BigDecimal calculateTotalPrice(@RequestBody OrderDtoPayment request);
 
     @PostMapping("/productCost")
-    BigDecimal calculateProductCost(@RequestBody OrderDto request);
+    BigDecimal calculateProductPrice(@RequestBody OrderDtoPayment request);
 
     @PostMapping("/refund")
     void handleSuccessfulPayment(@RequestBody UUID paymentId);

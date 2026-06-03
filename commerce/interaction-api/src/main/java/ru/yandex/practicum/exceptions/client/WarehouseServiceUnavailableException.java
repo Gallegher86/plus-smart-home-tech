@@ -1,4 +1,4 @@
-package ru.yandex.practicum.exceptions.warehouse;
+package ru.yandex.practicum.exceptions.client;
 
 public class WarehouseServiceUnavailableException extends RuntimeException {
 

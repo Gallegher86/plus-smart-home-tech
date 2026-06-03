@@ -11,8 +11,8 @@ import ru.yandex.practicum.dto.delivery.ShippedToDeliveryRequest;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.OrderBookingNotFoundException;
-import ru.yandex.practicum.exceptions.warehouse.WarehouseClientException;
-import ru.yandex.practicum.exceptions.warehouse.WarehouseServiceUnavailableException;
+import ru.yandex.practicum.exceptions.client.WarehouseClientException;
+import ru.yandex.practicum.exceptions.client.WarehouseServiceUnavailableException;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class WarehouseClientDeliveryFacade {
     private final WarehouseClient warehouseClient;
     private final ObjectMapper objectMapper;
 
-    @CircuitBreaker(name = "warehouse", fallbackMethod = "shipProductsToDeliveryFallback")
+    @CircuitBreaker(name = "warehouseDelivery", fallbackMethod = "shipProductsToDeliveryFallback")
     public void shipProductsToDelivery(ShippedToDeliveryRequest request) {
         try {
 

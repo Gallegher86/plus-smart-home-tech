@@ -2,9 +2,9 @@ package ru.yandex.practicum.service;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.enums.WarehouseAddresses;
-import ru.yandex.practicum.exceptions.delivery.UnknownWarehouseException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Component
 class DeliveryPriceCalculator {
@@ -16,7 +16,7 @@ class DeliveryPriceCalculator {
     private static final BigDecimal VOLUME_COEFFICIENT = BigDecimal.valueOf(0.2);
     private static final BigDecimal NOT_SAME_STREET_MULTIPLIER = BigDecimal.valueOf(0.2);
 
-    BigDecimal calculate(
+    BigDecimal calculateDeliveryPrice(
             WarehouseAddresses warehouseAddress,
             String deliveryAddress,
             double weight,
@@ -38,7 +38,7 @@ class DeliveryPriceCalculator {
             result = result.add(result.multiply(NOT_SAME_STREET_MULTIPLIER));
         }
 
-        return result;
+        return result.setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal applyWarehouseMultiplier(WarehouseAddresses address) {

@@ -56,9 +56,9 @@ public class ErrorHandler {
 
         return ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND)
-                .error(ErrorCodes.PRODUCT_NOT_FOUND)
+                .error(ErrorCodes.PRODUCT_IN_STORE_NOT_FOUND)
                 .message(ex.getMessage())
-                .userMessage(ErrorCodes.PRODUCT_NOT_FOUND.getMessage())
+                .userMessage(ErrorCodes.PRODUCT_IN_STORE_NOT_FOUND.getMessage())
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();

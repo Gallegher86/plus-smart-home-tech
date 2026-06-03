@@ -1,17 +1,20 @@
-package ru.yandex.practicum.facade;
+package ru.yandex.practicum.service;
 
+import ru.yandex.practicum.dto.ProductPrice;
+import ru.yandex.practicum.dto.order.OrderDto;
 import ru.yandex.practicum.dto.order.OrderDtoPayment;
 import ru.yandex.practicum.dto.payment.PaymentDto;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
-public interface PaymentFacade {
+public interface PaymentService {
     PaymentDto createPayment(OrderDtoPayment request);
 
     BigDecimal calculateTotalPrice(OrderDtoPayment request);
 
-    BigDecimal calculateProductPrice(OrderDtoPayment request);
+    BigDecimal calculateProductPrice(List<ProductPrice> itemsWithPrice);
 
     void handleSuccessfulPayment(UUID paymentId);
 

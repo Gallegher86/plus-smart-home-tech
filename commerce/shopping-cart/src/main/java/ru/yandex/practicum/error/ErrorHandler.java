@@ -15,7 +15,7 @@ import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exceptions.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
-import ru.yandex.practicum.exceptions.warehouse.WarehouseServiceUnavailableException;
+import ru.yandex.practicum.exceptions.client.WarehouseServiceUnavailableException;
 
 import java.time.LocalDateTime;
 import java.util.List;
