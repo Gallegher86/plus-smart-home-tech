@@ -15,11 +15,19 @@ public interface OrderFacade {
 
     OrderDto handleReturn(ProductReturnRequest request);
 
-    OrderDto handlePayment(UUID orderId);
+    OrderDto prepareOrderForPayment(UUID orderId);
+
+    OrderDto handleSuccessfulPayment(UUID orderId);
 
     OrderDto handleFailedPayment(UUID orderId);
 
-    OrderDto handleDelivery(UUID orderId);
+    OrderDto handleSuccessfulAssembly(UUID orderId);
+
+    OrderDto handleFailedAssembly(UUID orderId);
+
+    OrderDto handlePickedDelivery(UUID orderId);
+
+    OrderDto handleSuccessfulDelivery(UUID orderId);
 
     OrderDto handleFailedDelivery(UUID orderId);
 
@@ -28,8 +36,4 @@ public interface OrderFacade {
     OrderDto handleCalculateTotalPrice(UUID orderId);
 
     OrderDto handleCalculateDeliveryPrice(UUID orderId);
-
-    OrderDto handleAssembly(UUID orderId);
-
-    OrderDto handleFailedAssembly(UUID orderId);
 }

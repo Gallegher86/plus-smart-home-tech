@@ -29,8 +29,8 @@ public class OrderController implements OrderClient {
     private final OrderFacade orderFacade;
 
     @GetMapping
-    public Page<OrderDto> getProducts(@RequestParam String username,
-                                      @PageableDefault(
+    public Page<OrderDto> getOrders(@RequestParam String username,
+                                    @PageableDefault(
                                                 size = PaginationConstants.DEFAULT_PAGE_SIZE,
                                                 sort = PaginationConstants.DEFAULT_SORT,
                                                 direction = ASC) Pageable pageable) {
@@ -54,9 +54,15 @@ public class OrderController implements OrderClient {
     }
 
     @PostMapping("/payment")
-    public OrderDto handlePayment(@RequestBody @NotNull UUID orderId) {
-        log.info("Получен POST-запрос на оплату заказа с id {}.", orderId);
-        return orderFacade.handlePayment(orderId);
+    public OrderDto prepareOrderForPayment(@RequestBody @NotNull UUID orderId) {
+        log.info("Получен POST-запрос на оформление оплаты заказа с id {}.", orderId);
+        return orderFacade.prepareOrderForPayment(orderId);
+    }
+
+    @PostMapping("/payment/successful")
+    public OrderDto handleSuccessfulPayment(@RequestBody @NotNull UUID orderId) {
+        log.info("Получен POST-запрос об успешной оплате заказа с id {}.", orderId);
+        return orderFacade.handleSuccessfulPayment(orderId);
     }
 
     @PostMapping("/payment/failed")
@@ -65,16 +71,22 @@ public class OrderController implements OrderClient {
         return orderFacade.handleFailedPayment(orderId);
     }
 
-    @PostMapping("/delivery")
-    public OrderDto handleDelivery(@RequestBody @NotNull UUID orderId) {
+    @PostMapping("/delivery/successful")
+    public OrderDto handleSuccessfulDelivery(@RequestBody @NotNull UUID orderId) {
         log.info("Получен POST-запрос о доставке заказа с id {}.", orderId);
-        return orderFacade.handleDelivery(orderId);
+        return orderFacade.handleSuccessfulDelivery(orderId);
     }
 
     @PostMapping("/delivery/failed")
     public OrderDto handleFailedDelivery(@RequestBody @NotNull UUID orderId) {
         log.info("Получен POST-запрос об ошибке доставки заказа с id {}.", orderId);
         return orderFacade.handleFailedDelivery(orderId);
+    }
+
+    @PostMapping("/payment")
+    public OrderDto handlePickedDelivery(@RequestBody @NotNull UUID orderId) {
+        log.info("Получен POST-запрос о подготовке доставки заказа с id {}.", orderId);
+        return orderFacade.handlePickedDelivery(orderId);
     }
 
     @PostMapping("/completed")
@@ -96,9 +108,9 @@ public class OrderController implements OrderClient {
     }
 
     @PostMapping("/assembly")
-    public OrderDto handleAssembly(@RequestBody @NotNull UUID orderId) {
+    public OrderDto handleSuccessfulAssembly(@RequestBody @NotNull UUID orderId) {
         log.info("Получен POST-запрос о сборке заказа с id {}.", orderId);
-        return orderFacade.handleAssembly(orderId);
+        return orderFacade.handleSuccessfulAssembly(orderId);
     }
 
     @PostMapping("/assembly/failed")

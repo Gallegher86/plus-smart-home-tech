@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS order_bookings
 (
     order_id            UUID                   PRIMARY KEY,
     delivery_id         UUID,
-    delivery_weight     DOUBLE PRECISION       NOT NULL           CHECK (delivery_weight >= 0),
-    delivery_volume     DOUBLE PRECISION       NOT NULL           CHECK (delivery_volume >= 0),
+    delivery_weight     DOUBLE PRECISION       NOT NULL           CHECK (delivery_weight >= 1),
+    delivery_volume     DOUBLE PRECISION       NOT NULL           CHECK (delivery_volume >= 1),
     fragile             BOOLEAN                NOT NULL           DEFAULT FALSE
 );

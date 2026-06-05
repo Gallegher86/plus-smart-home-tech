@@ -41,12 +41,8 @@ public class DeliveryFacadeImpl implements DeliveryFacade {
                 .deliveryId(result.getDeliveryId())
                 .build();
 
-        try {
-            warehouseClient.shipProductsToDelivery(request);
-            orderClient.handleSuccessfulAssembly(orderId);
-        } catch (OrderBookingNotFoundException ex) {
-            orderClient.handleFailedAssembly(orderId);
-        }
+        warehouseClient.shipProductsToDelivery(request);
+        orderClient.handlePickedDelivery(orderId);
     }
 
     @Override

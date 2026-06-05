@@ -20,6 +20,7 @@ import ru.yandex.practicum.repository.DeliveryRepository;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -105,12 +106,15 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     private Address findAddressOrCreate(AddressDto address) {
+        String flat = Optional.ofNullable(address.getFlat())
+                .orElse("");
+
         return addressRepository.findByCountryAndCityAndStreetAndHouseAndFlat(
                 address.getCountry(),
                 address.getCity(),
                 address.getStreet(),
                 address.getHouse(),
-                address.getFlat()).orElseGet(() -> addressRepository.save(deliveryMapper.toAddress(address)));
+                flat).orElseGet(() -> addressRepository.save(deliveryMapper.toAddress(address)));
     }
 
     private Delivery findDeliveryOrThrow(UUID deliveryId) {

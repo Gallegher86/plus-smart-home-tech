@@ -1,7 +1,5 @@
 package ru.yandex.practicum.client;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,42 +18,48 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 public interface OrderClient {
 
     @GetMapping
-    Page<OrderDto> getProducts(@RequestParam String username,
-                                      @PageableDefault(
+    Page<OrderDto> getOrders(@RequestParam String username,
+                             @PageableDefault(
                                               size = PaginationConstants.DEFAULT_PAGE_SIZE,
                                               sort = PaginationConstants.DEFAULT_SORT,
                                               direction = ASC) Pageable pageable);
 
     @PutMapping
-    OrderDto createOrder(@RequestBody @Valid CreateNewOrderRequest request);
+    OrderDto createOrder(@RequestBody CreateNewOrderRequest request);
 
     @PostMapping("/return")
-    OrderDto handleReturn(@RequestBody @Valid ProductReturnRequest request);
+    OrderDto handleReturn(@RequestBody ProductReturnRequest request);
 
     @PostMapping("/payment")
-    OrderDto handlePayment(@RequestBody @NotNull UUID orderId);
+    OrderDto prepareOrderForPayment(@RequestBody UUID orderId);
+
+    @PostMapping("/payment/successful")
+    OrderDto handleSuccessfulPayment(@RequestBody UUID orderId);
 
     @PostMapping("/payment/failed")
-    OrderDto handleFailedPayment(@RequestBody @NotNull UUID orderId);
-
-    @PostMapping("/delivery")
-    OrderDto handleDelivery(@RequestBody @NotNull UUID orderId);
-
-    @PostMapping("/delivery/failed")
-    OrderDto handleFailedDelivery(@RequestBody @NotNull UUID orderId);
-
-    @PostMapping("/completed")
-    OrderDto handleComplete(@RequestBody @NotNull UUID orderId);
-
-    @PostMapping("/calculate/total")
-    OrderDto handleCalculateTotalPrice(@RequestBody @NotNull UUID orderId);
-
-    @PostMapping("/calculate/delivery")
-    OrderDto handleCalculateDeliveryPrice(@RequestBody @NotNull UUID orderId);
+    OrderDto handleFailedPayment(@RequestBody UUID orderId);
 
     @PostMapping("/assembly")
-    OrderDto handleAssembly(@RequestBody @NotNull UUID orderId);
+    OrderDto handleSuccessfulAssembly(@RequestBody UUID orderId);
 
     @PostMapping("/assembly/failed")
-    OrderDto handleFailedAssembly(@RequestBody @NotNull UUID orderId);
+    OrderDto handleFailedAssembly(@RequestBody UUID orderId);
+
+    @PostMapping("/delivery")
+    OrderDto handlePickedDelivery(@RequestBody UUID orderId);
+
+    @PostMapping("/delivery/successful")
+    OrderDto handleSuccessfulDelivery(@RequestBody UUID orderId);
+
+    @PostMapping("/delivery/failed")
+    OrderDto handleFailedDelivery(@RequestBody UUID orderId);
+
+    @PostMapping("/completed")
+    OrderDto handleComplete(@RequestBody UUID orderId);
+
+    @PostMapping("/calculate/total")
+    OrderDto handleCalculateTotalPrice(@RequestBody UUID orderId);
+
+    @PostMapping("/calculate/delivery")
+    OrderDto handleCalculateDeliveryPrice(@RequestBody UUID orderId);
 }
