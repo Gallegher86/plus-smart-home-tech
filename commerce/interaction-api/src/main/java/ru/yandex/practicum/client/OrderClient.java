@@ -36,13 +36,15 @@ public interface OrderClient {
     // 1. Оплата
 
     /**
-     * Переводит заказ в состояние оплаты.
+     * Перевод заказ в состояние оплаты. Проведение обогащения заказа необходимыми данными.
+     * Переводит заказ в статус ON_PAYMENT.
      */
     @PostMapping("/payment")
     OrderDto prepareOrderForPayment(@RequestBody @NotNull UUID orderId);
 
     /**
      * Подтверждение успешной или неуспешной оплаты, если статус заказа ON_PAYMENT.
+     * Переводит заказ в статус PAID или PAYMENT_FAILED.
      */
     @PostMapping("/payment/successful")
     OrderDto handleSuccessfulPayment(@RequestBody @NotNull UUID orderId);
@@ -54,6 +56,7 @@ public interface OrderClient {
 
     /**
      * Подтверждение успешной или неуспешной сборки, если статус заказа PAID.
+     * Переводит заказ в статус  ASSEMBLED или ASSEMBLY_FAILED.
      */
     @PostMapping("/assembly")
     OrderDto handleSuccessfulAssembly(@RequestBody @NotNull UUID orderId);
@@ -65,12 +68,14 @@ public interface OrderClient {
 
     /**
      * Регистрация доставки и создание брони на доставку на складе, если статус заказа ASSEMBLED.
+     * Переводит заказ в статус  ON_DELIVERY.
      */
     @PostMapping("/delivery")
     OrderDto handlePickedDelivery(@RequestBody @NotNull UUID orderId);
 
     /**
      * Подтверждение успешной или неуспешной доставки, если статус заказа ON_DELIVERY.
+     * Переводит заказ в статус DELIVERED или DELIVERY_FAILED.
      */
     @PostMapping("/delivery/successful")
     OrderDto handleSuccessfulDelivery(@RequestBody @NotNull UUID orderId);
@@ -82,6 +87,7 @@ public interface OrderClient {
 
     /**
      * Подтверждение завершения заказа, если статус заказа DELIVERED.
+     * Переводит заказ в статус COMPLETED.
      */
     @PostMapping("/completed")
     OrderDto handleComplete(@RequestBody @NotNull UUID orderId);
@@ -90,6 +96,7 @@ public interface OrderClient {
 
     /**
      * Возврат заказа, если статус заказа COMPLETED.
+     * Переводит заказ в статус RETURNED.
      */
     @PostMapping("/return")
     OrderDto handleReturn(@RequestBody @Valid ProductReturnRequest request);
