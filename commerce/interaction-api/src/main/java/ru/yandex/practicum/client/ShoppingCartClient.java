@@ -1,5 +1,8 @@
 package ru.yandex.practicum.client;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.cart.ChangeProductQuantityRequest;
@@ -17,16 +20,16 @@ public interface ShoppingCartClient {
 
     @PutMapping
     ShoppingCartDto addProducts(@RequestParam String username,
-                                @RequestBody Map<UUID, Long> products);
+                                @RequestBody @NotEmpty Map<UUID, @Min(1) Long> products);
 
     @DeleteMapping
     void deactivateShoppingCart(@RequestParam String username);
 
     @PostMapping("/remove")
     ShoppingCartDto removeProducts(@RequestParam String username,
-                                   @RequestBody List<UUID> products);
+                                   @RequestBody @NotEmpty List<UUID> products);
 
     @PostMapping("/change-quantity")
     ShoppingCartDto changeProductsQuantity(@RequestParam String username,
-                                           @RequestBody ChangeProductQuantityRequest request);
+                                           @RequestBody @Valid ChangeProductQuantityRequest request);
 }

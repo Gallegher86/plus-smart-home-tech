@@ -1,5 +1,6 @@
 package ru.yandex.practicum.client;
 
+import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -21,16 +22,16 @@ public interface ShoppingStoreClient {
 
     @GetMapping
     Page<ProductDto> getProducts(@RequestParam ProductCategory category,
-                                        @PageableDefault(
-                                                size = PaginationConstants.DEFAULT_PAGE_SIZE,
-                                                sort = PaginationConstants.DEFAULT_SORT,
-                                                direction = ASC) Pageable pageable);
+                                 @PageableDefault(
+                                         size = PaginationConstants.DEFAULT_PAGE_SIZE,
+                                         sort = PaginationConstants.DEFAULT_SORT,
+                                         direction = ASC) Pageable pageable);
 
     @PutMapping
-    ProductDto addProduct(@RequestBody NewProductDto newProduct);
+    ProductDto addProduct(@RequestBody @Valid NewProductDto newProduct);
 
     @PostMapping
-    ProductDto updateProduct(@RequestBody UpdatedProductDto updatedProduct);
+    ProductDto updateProduct(@RequestBody @Valid UpdatedProductDto updatedProduct);
 
     @PostMapping("/removeProductFromStore")
     boolean deactivateProduct(@RequestBody UUID productId);

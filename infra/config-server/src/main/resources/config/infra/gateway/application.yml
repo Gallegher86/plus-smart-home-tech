@@ -45,10 +45,10 @@ spring:
                   - SERVICE_UNAVAILABLE
                   - GATEWAY_TIMEOUT
                 backoff:
-                    firstBackoff: 500ms
-                    maxBackoff: 2000ms
-                    factor: 2
-                    basedOnPreviousValue: true
+                  firstBackoff: 500ms
+                  maxBackoff: 2000ms
+                  factor: 2
+                  basedOnPreviousValue: true
 
         - id: warehouse_service_route
           uri: lb://warehouse

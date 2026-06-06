@@ -262,6 +262,25 @@ public class ErrorHandler {
                 .build();
     }
 
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleInternalServerError(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+
+        log.error("Внутренняя ошибка сервера", ex);
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .error(ErrorCodes.INTERNAL_SERVER_ERROR)
+                .message(ex.getClass().getName())
+                .userMessage(ex.getMessage()) // ВАЖНО: для теста
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
     private String formatFieldError(FieldError error) {
         return String.format("Поле '%s': %s", error.getField(), error.getDefaultMessage());
     }

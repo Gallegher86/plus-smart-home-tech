@@ -59,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         Order savedOrder = orderRepository.save(order);
-        log.debug("Service. Запрос на создание заказа из корзины с id {} выполнен, создан заказ с id {}.",
+        log.info("Service. Запрос на создание заказа из корзины с id {} выполнен, создан заказ с id {}.",
                 shoppingCart.getShoppingCartId(), savedOrder.getOrderId());
         return mapper.toOrderDto(savedOrder);
     }
