@@ -19,6 +19,11 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 @FeignClient(name = "order", path = "/api/v1/order")
 public interface OrderClient {
 
+    // Создание заказа
+    @PutMapping
+    OrderDto createOrder(@RequestBody @Valid CreateNewOrderRequest request);
+
+    // Получение заказов
     @GetMapping
     Page<OrderDto> getOrders(@RequestParam String username,
                              @PageableDefault(
@@ -26,39 +31,70 @@ public interface OrderClient {
                                      sort = PaginationConstants.ORDER_STATE_SORT,
                                      direction = ASC) Pageable pageable);
 
-    @PutMapping
-    OrderDto createOrder(@RequestBody @Valid CreateNewOrderRequest request);
+    // Цикл обработки заказа
 
-    @PostMapping("/return")
-    OrderDto handleReturn(@RequestBody @Valid ProductReturnRequest request);
+    // 1. Оплата
 
+    /**
+     * Переводит заказ в состояние оплаты.
+     */
     @PostMapping("/payment")
     OrderDto prepareOrderForPayment(@RequestBody @NotNull UUID orderId);
 
+    /**
+     * Подтверждение успешной или неуспешной оплаты, если статус заказа ON_PAYMENT.
+     */
     @PostMapping("/payment/successful")
     OrderDto handleSuccessfulPayment(@RequestBody @NotNull UUID orderId);
 
     @PostMapping("/payment/failed")
     OrderDto handleFailedPayment(@RequestBody @NotNull UUID orderId);
 
+    // 2. Сборка
+
+    /**
+     * Подтверждение успешной или неуспешной сборки, если статус заказа PAID.
+     */
     @PostMapping("/assembly")
     OrderDto handleSuccessfulAssembly(@RequestBody @NotNull UUID orderId);
 
     @PostMapping("/assembly/failed")
     OrderDto handleFailedAssembly(@RequestBody @NotNull UUID orderId);
 
+    // 3. Доставка
+
+    /**
+     * Регистрация доставки и создание брони на доставку на складе, если статус заказа ASSEMBLED.
+     */
     @PostMapping("/delivery")
     OrderDto handlePickedDelivery(@RequestBody @NotNull UUID orderId);
 
+    /**
+     * Подтверждение успешной или неуспешной доставки, если статус заказа ON_DELIVERY.
+     */
     @PostMapping("/delivery/successful")
     OrderDto handleSuccessfulDelivery(@RequestBody @NotNull UUID orderId);
 
     @PostMapping("/delivery/failed")
     OrderDto handleFailedDelivery(@RequestBody @NotNull UUID orderId);
 
+    // 4. Завершение заказа
+
+    /**
+     * Подтверждение завершения заказа, если статус заказа DELIVERED.
+     */
     @PostMapping("/completed")
     OrderDto handleComplete(@RequestBody @NotNull UUID orderId);
 
+    // 5. Возврат завершенного заказа (по требованию)
+
+    /**
+     * Возврат заказа, если статус заказа COMPLETED.
+     */
+    @PostMapping("/return")
+    OrderDto handleReturn(@RequestBody @Valid ProductReturnRequest request);
+
+    // Расчет полной цены и цены доставки (вспомогательные методы)
     @PostMapping("/calculate/total")
     OrderDto handleCalculateTotalPrice(@RequestBody @NotNull UUID orderId);
 

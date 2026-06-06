@@ -28,17 +28,6 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 public class OrderController implements OrderClient {
     private final OrderFacade orderFacade;
 
-    @GetMapping
-    public Page<OrderDto> getOrders(@RequestParam String username,
-                                    @PageableDefault(
-                                                size = PaginationConstants.DEFAULT_PAGE_SIZE,
-                                                sort = PaginationConstants.ORDER_STATE_SORT,
-                                                direction = ASC) Pageable pageable) {
-        log.info("От пользователя {} получен GET-запрос на просмотр его заказов с пагинацией {}.",
-                username, pageable);
-        return orderFacade.getUserOrders(username, pageable);
-    }
-
     @PutMapping
     public OrderDto createOrder(@RequestBody @Valid CreateNewOrderRequest request) {
         log.info("Получен PUT-запрос на создание заказа из корзины с id {}.",
@@ -46,11 +35,15 @@ public class OrderController implements OrderClient {
         return orderFacade.createOrder(request);
     }
 
-    @PostMapping("/return")
-    public OrderDto handleReturn(@RequestBody @Valid ProductReturnRequest request) {
-        log.info("Получен POST-запрос на возврат товара по заказу с id {}.",
-                request.getOrderId());
-        return orderFacade.handleReturn(request);
+    @GetMapping
+    public Page<OrderDto> getOrders(@RequestParam String username,
+                                    @PageableDefault(
+                                            size = PaginationConstants.DEFAULT_PAGE_SIZE,
+                                            sort = PaginationConstants.ORDER_STATE_SORT,
+                                            direction = ASC) Pageable pageable) {
+        log.info("От пользователя {} получен GET-запрос на просмотр его заказов с пагинацией {}.",
+                username, pageable);
+        return orderFacade.getUserOrders(username, pageable);
     }
 
     @PostMapping("/payment")
@@ -105,6 +98,13 @@ public class OrderController implements OrderClient {
     public OrderDto handleComplete(@RequestBody @NotNull UUID orderId) {
         log.info("Получен POST-запрос о выполнении заказа с id {}.", orderId);
         return orderFacade.handleComplete(orderId);
+    }
+
+    @PostMapping("/return")
+    public OrderDto handleReturn(@RequestBody @Valid ProductReturnRequest request) {
+        log.info("Получен POST-запрос на возврат товара по заказу с id {}.",
+                request.getOrderId());
+        return orderFacade.handleReturn(request);
     }
 
     @PostMapping("/calculate/total")
