@@ -40,3 +40,4 @@ spring:
           permitted-number-of-calls-in-half-open-state: 3
           ignore-exceptions:
             - ru.yandex.practicum.exceptions.warehouse.OrderBookingNotFoundException
+            - ru.yandex.practicum.exceptions.client.ServiceValidationException

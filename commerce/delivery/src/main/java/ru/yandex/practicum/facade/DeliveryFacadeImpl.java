@@ -7,7 +7,6 @@ import ru.yandex.practicum.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.dto.delivery.NewDeliveryDto;
 import ru.yandex.practicum.dto.delivery.ShippedToDeliveryRequest;
 import ru.yandex.practicum.dto.order.OrderDtoDelivery;
-import ru.yandex.practicum.exceptions.warehouse.OrderBookingNotFoundException;
 import ru.yandex.practicum.service.DeliveryService;
 
 import java.math.BigDecimal;
@@ -17,18 +16,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeliveryFacadeImpl implements DeliveryFacade {
     private final DeliveryService service;
-    private final OrderClient orderClient;
     private final WarehouseClientDeliveryFacade warehouseClient;
 
     @Override
     public DeliveryDto createDelivery(NewDeliveryDto request) {
         return service.createDelivery(request);
-    }
-
-    @Override
-    public void handleSuccessfulDelivery(UUID deliveryId) {
-        DeliveryDto result = service.handleSuccessfulDelivery(deliveryId);
-        orderClient.handleSuccessfulDelivery(result.getOrderId());
     }
 
     @Override
@@ -42,13 +34,16 @@ public class DeliveryFacadeImpl implements DeliveryFacade {
                 .build();
 
         warehouseClient.shipProductsToDelivery(request);
-        orderClient.handlePickedDelivery(orderId);
+    }
+
+    @Override
+    public void handleSuccessfulDelivery(UUID deliveryId) {
+        service.handleSuccessfulDelivery(deliveryId);
     }
 
     @Override
     public void handleFailedDelivery(UUID deliveryId) {
-        DeliveryDto result = service.handleFailedDelivery(deliveryId);
-        orderClient.handleFailedDelivery(result.getOrderId());
+        service.handleFailedDelivery(deliveryId);
     }
 
     @Override

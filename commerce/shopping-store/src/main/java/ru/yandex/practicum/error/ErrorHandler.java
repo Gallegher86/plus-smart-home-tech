@@ -52,7 +52,7 @@ public class ErrorHandler {
             HttpServletRequest request
     ) {
 
-        log.warn("Товар не найден: {}", ex.getMessage());
+        log.warn("Товар в магазине не найден: {}", ex.getMessage());
 
         return ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND)

@@ -10,11 +10,11 @@ import java.util.UUID;
 public interface DeliveryService {
     DeliveryDto createDelivery(NewDeliveryDto request);
 
-    DeliveryDto handleSuccessfulDelivery(UUID deliveryId);
-
     DeliveryDto handlePickedDelivery(UUID deliveryId);
 
-    DeliveryDto handleFailedDelivery(UUID deliveryId);
+    void handleSuccessfulDelivery(UUID deliveryId);
+
+    void handleFailedDelivery(UUID deliveryId);
 
     BigDecimal calculateDeliveryCost(OrderDtoDelivery request);
 }

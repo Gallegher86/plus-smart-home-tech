@@ -5,9 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.client.DeliveryClient;
-import ru.yandex.practicum.client.PaymentClient;
-import ru.yandex.practicum.client.WarehouseClient;
 import ru.yandex.practicum.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.dto.delivery.NewDeliveryDto;
 import ru.yandex.practicum.dto.order.*;
@@ -28,9 +25,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderFacadeImpl implements OrderFacade {
     private final OrderService service;
-    private final WarehouseClient warehouseClient;
-    private final DeliveryClient deliveryClient;
-    private final PaymentClient paymentClient;
+    private final WarehouseClientOrderFacade warehouseClient;
+    private final DeliveryClientOrderFacade deliveryClient;
+    private final PaymentClientOrderFacade paymentClient;
     private final OrderMapper mapper;
 
     @Override
@@ -188,6 +185,8 @@ public class OrderFacadeImpl implements OrderFacade {
                     " не собран, подготовка к доставке невозможна.");
         }
 
+        deliveryClient.handlePickedDelivery(orderContext.getDeliveryId());
+
         orderContext = orderContext.toBuilder()
                 .state(OrderState.ON_DELIVERY)
                 .build();
@@ -231,6 +230,8 @@ public class OrderFacadeImpl implements OrderFacade {
             throw new OrderStateException("Заказ с id " + orderId +
                     " не находится в доставке, неуспешная доставка невозможна.");
         }
+
+        deliveryClient.handleFailedDelivery(orderContext.getDeliveryId());
 
         orderContext = orderContext.toBuilder()
                 .state(OrderState.DELIVERY_FAILED)
@@ -326,7 +327,7 @@ public class OrderFacadeImpl implements OrderFacade {
             log.debug("Данные заказа с id {} успешно обновлены.", orderContext.getOrderId());
         }
 
-        return  orderContext;
+        return orderContext;
     }
 
     private OrderContext enrichFromAddress(OrderContext orderContext) {
@@ -343,7 +344,7 @@ public class OrderFacadeImpl implements OrderFacade {
             log.debug("Facade. Адреса склада для заказа с id {} установлен.", orderContext.getOrderId());
         }
 
-        return  orderContext;
+        return orderContext;
     }
 
     private OrderContext registerDelivery(OrderContext orderContext) {

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.client.WarehouseClient;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
 import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
+import ru.yandex.practicum.exceptions.client.ServiceValidationException;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
@@ -33,6 +34,10 @@ public class WarehouseClientCartFacade {
             try {
 
                 ErrorResponse error = objectMapper.readValue(e.contentUTF8(), ErrorResponse.class);
+
+                if (ErrorCodes.VALIDATION_FAILED.equals(error.getError())) {
+                    throw new ServiceValidationException(error.getMessage(), error.getValidationErrors());
+                }
 
                 if (ErrorCodes.LOW_QUANTITY_IN_WAREHOUSE.equals(error.getError())) {
                     throw new ProductInShoppingCartLowQuantityInWarehouse(error.getMessage());

@@ -46,3 +46,4 @@ resilience4j:
         ignore-exceptions:
           - ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException
           - ru.yandex.practicum.exceptions.warehouse.ProductInShoppingCartLowQuantityInWarehouse
+          - ru.yandex.practicum.exceptions.client.ServiceValidationException

@@ -53,16 +53,6 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public DeliveryDto handleSuccessfulDelivery(UUID deliveryId) {
-        log.debug("Service. Обработка запроса на регистрацию успешной доставки с id {}.", deliveryId);
-        Delivery delivery = findDeliveryOrThrow(deliveryId);
-        delivery.setDeliveryState(DeliveryState.DELIVERED);
-        log.info("Service. Запрос на регистрацию успешной доставки с id {} обработан.", deliveryId);
-        return deliveryMapper.toDeliveryDto(delivery);
-    }
-
-    @Override
-    @Transactional
     public DeliveryDto handlePickedDelivery(UUID deliveryId) {
         log.debug("Service. Обработка запроса на регистрацию получения товара для доставки с id {}.", deliveryId);
         Delivery delivery = findDeliveryOrThrow(deliveryId);
@@ -73,12 +63,20 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public DeliveryDto handleFailedDelivery(UUID deliveryId) {
+    public void handleSuccessfulDelivery(UUID deliveryId) {
+        log.debug("Service. Обработка запроса на регистрацию успешной доставки с id {}.", deliveryId);
+        Delivery delivery = findDeliveryOrThrow(deliveryId);
+        delivery.setDeliveryState(DeliveryState.DELIVERED);
+        log.info("Service. Запрос на регистрацию успешной доставки с id {} обработан.", deliveryId);
+    }
+
+    @Override
+    @Transactional
+    public void handleFailedDelivery(UUID deliveryId) {
         log.debug("Service. Обработка запроса на регистрацию неуспешной доставки с id {}.", deliveryId);
         Delivery delivery = findDeliveryOrThrow(deliveryId);
         delivery.setDeliveryState(DeliveryState.FAILED);
         log.info("Service. Запрос на регистрацию неуспешной доставки с id {} обработан.", deliveryId);
-        return deliveryMapper.toDeliveryDto(delivery);
     }
 
     @Override

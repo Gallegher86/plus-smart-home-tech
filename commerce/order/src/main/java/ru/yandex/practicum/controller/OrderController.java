@@ -83,7 +83,7 @@ public class OrderController implements OrderClient {
         return orderFacade.handleFailedDelivery(orderId);
     }
 
-    @PostMapping("/payment")
+    @PostMapping("/delivery")
     public OrderDto handlePickedDelivery(@RequestBody @NotNull UUID orderId) {
         log.info("Получен POST-запрос о подготовке доставки заказа с id {}.", orderId);
         return orderFacade.handlePickedDelivery(orderId);

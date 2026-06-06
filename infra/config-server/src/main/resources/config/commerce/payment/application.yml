@@ -39,4 +39,5 @@ spring:
           wait-duration-in-open-state: 10s
           permitted-number-of-calls-in-half-open-state: 3
           ignore-exceptions:
-            - ru.yandex.practicum.exceptions.warehouse.ProductNotFoundException
+            - ru.yandex.practicum.exceptions.store.ProductNotFoundException
+            - ru.yandex.practicum.exceptions.client.ServiceValidationException

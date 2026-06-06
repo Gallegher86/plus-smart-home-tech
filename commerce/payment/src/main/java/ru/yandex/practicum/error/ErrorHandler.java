@@ -8,11 +8,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.exceptions.client.ServiceValidationException;
 import ru.yandex.practicum.exceptions.client.ShoppingStoreServiceUnavailableException;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.payment.OrderValidationException;
 import ru.yandex.practicum.exceptions.payment.PaymentNotFoundException;
+import ru.yandex.practicum.exceptions.store.ProductNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +45,27 @@ public class ErrorHandler {
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .validationErrors(errors)
+                .build();
+    }
+
+    @ExceptionHandler(ServiceValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleServiceValidationException(
+            ServiceValidationException ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Ошибки валидации при обращении к внешнему сервису: {}, {}", ex.getMessage(),
+                ex.getErrors());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .error(ErrorCodes.VALIDATION_FAILED)
+                .message(ex.getMessage())
+                .userMessage(ErrorCodes.VALIDATION_FAILED.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .validationErrors(ex.getErrors())
                 .build();
     }
 
@@ -80,6 +103,25 @@ public class ErrorHandler {
                 .error(ErrorCodes.PAYMENT_NOT_FOUND)
                 .message(ex.getMessage())
                 .userMessage(ErrorCodes.PAYMENT_NOT_FOUND.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleProductNotFoundException(
+            ProductNotFoundException ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Товары в магазине не найдены: {}", ex.getMessage());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .error(ErrorCodes.PRODUCT_IN_STORE_NOT_FOUND)
+                .message(ex.getMessage())
+                .userMessage(ErrorCodes.PRODUCT_IN_STORE_NOT_FOUND.getMessage())
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();

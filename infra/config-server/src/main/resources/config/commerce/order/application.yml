@@ -28,3 +28,36 @@ spring:
       root: INFO
       org.springframework: INFO
       org.hibernate.SQL: DEBUG
+
+  resilience4j:
+    circuitbreaker:
+      instances:
+        warehouseOrder:
+          sliding-window-size: 10
+          minimum-number-of-calls: 5
+          failure-rate-threshold: 50
+          wait-duration-in-open-state: 10s
+          permitted-number-of-calls-in-half-open-state: 3
+          ignore-exceptions:
+            - ru.yandex.practicum.exceptions.warehouse.OrderBookingAlreadyExistsException
+            - ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException
+            - ru.yandex.practicum.exceptions.client.ServiceValidationException
+        deliveryOrder:
+          sliding-window-size: 10
+          minimum-number-of-calls: 5
+          failure-rate-threshold: 50
+          wait-duration-in-open-state: 10s
+          permitted-number-of-calls-in-half-open-state: 3
+          ignore-exceptions:
+            - ru.yandex.practicum.exceptions.delivery.NoDeliveryFoundException
+            - ru.yandex.practicum.exceptions.client.ServiceValidationException
+        paymentOrder:
+          sliding-window-size: 10
+          minimum-number-of-calls: 5
+          failure-rate-threshold: 50
+          wait-duration-in-open-state: 10s
+          permitted-number-of-calls-in-half-open-state: 3
+          ignore-exceptions:
+            - ru.yandex.practicum.exceptions.payment.PaymentNotFoundException
+            - ru.yandex.practicum.exceptions.store.ProductNotFoundException
+            - ru.yandex.practicum.exceptions.client.ServiceValidationException

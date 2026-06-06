@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.exceptions.cart.NoProductsInShoppingCartException;
 import ru.yandex.practicum.exceptions.cart.NotAuthorizedUserException;
 import ru.yandex.practicum.exceptions.cart.ShoppingCartNotFoundException;
+import ru.yandex.practicum.exceptions.client.ServiceValidationException;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
@@ -46,6 +47,27 @@ public class ErrorHandler {
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .validationErrors(errors)
+                .build();
+    }
+
+    @ExceptionHandler(ServiceValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleServiceValidationException(
+            ServiceValidationException ex,
+            HttpServletRequest request
+    ) {
+
+        log.warn("Ошибки валидации при обращении к внешнему сервису: {}, {}", ex.getMessage(),
+                ex.getErrors());
+
+        return ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .error(ErrorCodes.VALIDATION_FAILED)
+                .message(ex.getMessage())
+                .userMessage(ErrorCodes.VALIDATION_FAILED.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .validationErrors(ex.getErrors())
                 .build();
     }
 

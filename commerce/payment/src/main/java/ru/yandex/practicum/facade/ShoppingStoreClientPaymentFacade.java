@@ -8,8 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.client.ShoppingStoreClient;
 import ru.yandex.practicum.dto.store.ProductDto;
-import ru.yandex.practicum.exceptions.client.ShoppingStoreClientException;
-import ru.yandex.practicum.exceptions.client.ShoppingStoreServiceUnavailableException;
+import ru.yandex.practicum.exceptions.client.*;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.store.ProductNotFoundException;
@@ -25,25 +24,44 @@ public class ShoppingStoreClientPaymentFacade {
     @CircuitBreaker(name = "shoppingStorePayment", fallbackMethod = "getProductByIdFallback")
     public ProductDto getProductById(UUID productId) {
         try {
-
             return shoppingStoreClient.getProductById(productId);
+        } catch (FeignException e) {
+            throw handleFeignException(e);
+        }
+    }
 
-        } catch (FeignException.NotFound e) {
+    private RuntimeException handleFeignException(FeignException e) {
 
-            try {
+        try {
+            ErrorResponse error =
+                    objectMapper.readValue(e.contentUTF8(), ErrorResponse.class);
 
-                ErrorResponse error = objectMapper.readValue(e.contentUTF8(), ErrorResponse.class);
+            return switch (e.status()) {
 
-                if (ErrorCodes.PRODUCT_IN_STORE_NOT_FOUND.equals(error.getError())) {
-                    throw new ProductNotFoundException(error.getMessage());
+                case 400 -> {
+                    if (ErrorCodes.VALIDATION_FAILED.equals(error.getError())) {
+                        yield new ServiceValidationException(error.getMessage(), error.getValidationErrors());
+                    }
+
+                    yield new ShoppingStoreClientException(error.getMessage(), e);
                 }
 
-                throw new ShoppingStoreClientException("Неожиданная ошибка обработки ответа сервиса склада.", e);
+                case 404 -> {
+                    if (ErrorCodes.PRODUCT_IN_STORE_NOT_FOUND.equals(error.getError())) {
+                        yield new ProductNotFoundException(error.getMessage());
+                    }
+                    yield new ShoppingStoreClientException(error.getMessage(), e);
+                }
 
-            } catch (JsonProcessingException ex) {
+                default -> new ShoppingStoreClientException(
+                        "Неожиданный ответ сервиса магазина. HTTP " + e.status(), e
+                );
+            };
 
-                throw new ShoppingStoreClientException("Неожиданная ошибка ответа сервиса склада.", ex);
-            }
+        } catch (JsonProcessingException ex) {
+            return new WarehouseClientException(
+                    "Ошибка разбора ответа сервиса магазина.", ex
+            );
         }
     }
 

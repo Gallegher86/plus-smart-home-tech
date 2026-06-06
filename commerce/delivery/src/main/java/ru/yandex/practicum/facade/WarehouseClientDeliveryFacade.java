@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.client.WarehouseClient;
 import ru.yandex.practicum.dto.delivery.ShippedToDeliveryRequest;
+import ru.yandex.practicum.exceptions.client.ServiceValidationException;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.OrderBookingNotFoundException;
@@ -31,6 +32,10 @@ public class WarehouseClientDeliveryFacade {
             try {
 
                 ErrorResponse error = objectMapper.readValue(e.contentUTF8(), ErrorResponse.class);
+
+                if (ErrorCodes.VALIDATION_FAILED.equals(error.getError())) {
+                    throw new ServiceValidationException(error.getMessage(), error.getValidationErrors());
+                }
 
                 if (ErrorCodes.ORDER_BOOKING_NOT_FOUND.equals(error.getError())) {
                     throw new OrderBookingNotFoundException(error.getMessage());
