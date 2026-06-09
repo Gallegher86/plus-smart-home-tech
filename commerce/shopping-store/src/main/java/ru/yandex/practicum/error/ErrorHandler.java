@@ -52,13 +52,13 @@ public class ErrorHandler {
             HttpServletRequest request
     ) {
 
-        log.warn("Товар не найден: {}", ex.getMessage());
+        log.warn("Товар в магазине не найден: {}", ex.getMessage());
 
         return ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND)
-                .error(ErrorCodes.PRODUCT_NOT_FOUND)
+                .error(ErrorCodes.PRODUCT_IN_STORE_NOT_FOUND)
                 .message(ex.getMessage())
-                .userMessage(ErrorCodes.PRODUCT_NOT_FOUND.getMessage())
+                .userMessage(ErrorCodes.PRODUCT_IN_STORE_NOT_FOUND.getMessage())
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -76,8 +76,8 @@ public class ErrorHandler {
         return ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .error(ErrorCodes.INTERNAL_SERVER_ERROR)
-                .message(ErrorCodes.INTERNAL_SERVER_ERROR.getMessage())
-                .userMessage("На сервере произошла ошибка. Попробуйте позже.")
+                .message(ex.getClass().getName())
+                .userMessage(ex.getMessage()) // ВАЖНО: для теста
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();

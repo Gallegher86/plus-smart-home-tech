@@ -9,20 +9,21 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.client.WarehouseClient;
 import ru.yandex.practicum.dto.cart.ShoppingCartDto;
 import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
-import ru.yandex.practicum.exceptions.cart.CartValidationException;
+import ru.yandex.practicum.exceptions.client.ServiceValidationException;
 import ru.yandex.practicum.exceptions.handler.ErrorCodes;
 import ru.yandex.practicum.exceptions.handler.ErrorResponse;
 import ru.yandex.practicum.exceptions.warehouse.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exceptions.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
-import ru.yandex.practicum.exceptions.warehouse.WarehouseServiceUnavailableException;
+import ru.yandex.practicum.exceptions.client.WarehouseClientException;
+import ru.yandex.practicum.exceptions.client.WarehouseServiceUnavailableException;
 
 @Service
 @RequiredArgsConstructor
-public class WarehouseClientFacade {
+public class WarehouseClientCartFacade {
     private final WarehouseClient warehouseClient;
     private final ObjectMapper objectMapper;
 
-    @CircuitBreaker(name = "warehouse", fallbackMethod = "checkShoppingCartFallback")
+    @CircuitBreaker(name = "warehouseCart", fallbackMethod = "checkShoppingCartFallback")
     public BookedProductsDto checkShoppingCart(ShoppingCartDto shoppingCart) {
         try {
 
@@ -34,6 +35,10 @@ public class WarehouseClientFacade {
 
                 ErrorResponse error = objectMapper.readValue(e.contentUTF8(), ErrorResponse.class);
 
+                if (ErrorCodes.VALIDATION_FAILED.equals(error.getError())) {
+                    throw new ServiceValidationException(error.getMessage(), error.getValidationErrors());
+                }
+
                 if (ErrorCodes.LOW_QUANTITY_IN_WAREHOUSE.equals(error.getError())) {
                     throw new ProductInShoppingCartLowQuantityInWarehouse(error.getMessage());
                 }
@@ -42,11 +47,11 @@ public class WarehouseClientFacade {
                     throw new NoSpecifiedProductInWarehouseException(error.getMessage());
                 }
 
-                throw new CartValidationException("Ошибка проверки корзины сервисом склада.");
+                throw new WarehouseClientException("Неожиданная ошибка обработки ответа сервиса склада.", e);
 
             } catch (JsonProcessingException ex) {
 
-                throw new CartValidationException("Ошибка обработки ответа сервиса склада.");
+                throw new WarehouseClientException("Неожиданная ошибка ответа сервиса склада.", ex);
             }
         }
     }

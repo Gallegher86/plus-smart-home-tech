@@ -22,10 +22,10 @@ public interface ShoppingStoreClient {
 
     @GetMapping
     Page<ProductDto> getProducts(@RequestParam ProductCategory category,
-                                        @PageableDefault(
-                                                size = PaginationConstants.DEFAULT_PAGE_SIZE,
-                                                sort = PaginationConstants.DEFAULT_SORT,
-                                                direction = ASC) Pageable pageable);
+                                 @PageableDefault(
+                                         size = PaginationConstants.DEFAULT_PAGE_SIZE,
+                                         sort = PaginationConstants.DEFAULT_SORT,
+                                         direction = ASC) Pageable pageable);
 
     @PutMapping
     ProductDto addProduct(@RequestBody @Valid NewProductDto newProduct);

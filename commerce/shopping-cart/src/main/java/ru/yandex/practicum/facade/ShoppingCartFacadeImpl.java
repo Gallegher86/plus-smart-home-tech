@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ShoppingCartFacadeImpl implements ShoppingCartFacade{
     private final ShoppingCartService service;
-    private final WarehouseClientFacade warehouseClient;
+    private final WarehouseClientCartFacade warehouseClient;
     private final ShoppingCartMapper mapper;
 
     @Override
